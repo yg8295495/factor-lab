@@ -66,6 +66,8 @@ const FactorChart: React.FC = () => {
   const [timeRange, setTimeRange] = useState(756);
   const [rawData, setRawData] = useState<any[]>([]);
   const [factorData, setFactorData] = useState<any[]>([]);
+  const [benchmarkData, setBenchmarkData] = useState<any[]>([]);
+  const [showBenchmark, setShowBenchmark] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const chartRef = useRef<any>(null);
@@ -94,6 +96,15 @@ const FactorChart: React.FC = () => {
       setLoading(false);
     }).catch(e => { setError(`加载数据失败: ${e.message}`); setLoading(false); });
   }, [selectedAsset, selectedFactor]);
+
+  // 加载基准数据
+  useEffect(() => {
+    if (!showBenchmark) { setBenchmarkData([]); return; }
+    fetch(`${API_BASE}/api/data/index.000985.SH?fields=trade_date,close&limit=5000`)
+      .then(r => r.json())
+      .then(data => setBenchmarkData((data || []).reverse()))
+      .catch(() => {});
+  }, [showBenchmark, selectedAsset]);
 
   const displayData = useMemo(() => {
     if (rawData.length === 0) return [];
@@ -144,6 +155,23 @@ const FactorChart: React.FC = () => {
         name: '收盘', type: 'line', yAxisIndex: 0, data: displayData.map((d: any) => d.close),
         lineStyle: { color: '#165DFF', width: 2 }, itemStyle: { color: '#165DFF' },
       });
+    }
+
+    // 基准指数（归一化到100叠加）
+    if (showBenchmark && benchmarkData.length > 0) {
+      const bmMap = new Map(benchmarkData.map((d: any) => [d.trade_date, d.close]));
+      const aligned = dates.map(d => bmMap.get(d) ?? null);
+      const firstVal = aligned.find(v => v != null);
+      if (firstVal) {
+        const normalized = aligned.map(v => v != null ? (v / firstVal) * 100 : null);
+        mainSeries.push({
+          name: '中证全指(归一化)', type: 'line', yAxisIndex: 0,
+          data: normalized,
+          lineStyle: { color: '#FF7D00', width: 1.5, type: 'dashed' },
+          itemStyle: { color: '#FF7D00' },
+          symbol: 'none',
+        });
+      }
     }
     if (alignedFactorValues.length > 0) {
       mainSeries.push({
@@ -243,6 +271,12 @@ const FactorChart: React.FC = () => {
           <option value={1260}>5年</option>
           <option value={5000}>全部</option>
         </select>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, cursor: 'pointer', userSelect: 'none' }}>
+          <input type="checkbox" checked={showBenchmark} onChange={e => setShowBenchmark(e.target.checked)}
+            style={{ cursor: 'pointer' }} />
+          显示基准(中证全指)
+        </label>
       </div>
 
       {/* 统计语义卡片 */}
