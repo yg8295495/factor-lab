@@ -100,7 +100,7 @@ const FactorChart: React.FC = () => {
   // 加载基准数据
   useEffect(() => {
     if (!showBenchmark) { setBenchmarkData([]); return; }
-    fetch(`${API_BASE}/api/data/index.000985.SH?fields=trade_date,close&limit=5000`)
+    fetch(`${API_BASE}/api/data/index.000985.SH?fields=trade_date,close,amount&limit=5000`)
       .then(r => r.json())
       .then(data => setBenchmarkData((data || []).reverse()))
       .catch(() => {});
@@ -126,13 +126,15 @@ const FactorChart: React.FC = () => {
     return dates.map(d => dateMap.get(d) ?? null);
   }, [factorData, dates]);
 
-  // 统计语义
-  const latestFactorValue = alignedFactorValues.filter(v => v != null).slice(-1)[0] ?? null;
+  // 当前光标位置（用于动态统计）
+  const [cursorIndex, setCursorIndex] = useState<number | null>(null);
+  const currentFactorValue = cursorIndex != null ? alignedFactorValues[cursorIndex] ?? null
+    : (alignedFactorValues.filter(v => v != null).slice(-1)[0] ?? null);
   const factorHistory = factorData.map((d: any) => d.factor_value).filter((v: any) => v != null);
-  const latestPercentile = latestFactorValue != null && factorHistory.length > 0
-    ? calcPercentile(latestFactorValue, factorHistory) : null;
-  const latestZscore = latestFactorValue != null && factorHistory.length > 0
-    ? calcZscore(latestFactorValue, factorHistory) : null;
+  const currentPercentile = currentFactorValue != null && factorHistory.length > 0
+    ? calcPercentile(currentFactorValue, factorHistory) : null;
+  const currentZscore = currentFactorValue != null && factorHistory.length > 0
+    ? calcZscore(currentFactorValue, factorHistory) : null;
 
   const factorDef = factors.find(f => f.name === selectedFactor);
   const factorNameCn = factorDef?.name_cn || selectedFactor;
@@ -165,7 +167,7 @@ const FactorChart: React.FC = () => {
       if (firstVal) {
         const normalized = aligned.map(v => v != null ? (v / firstVal) * 100 : null);
         mainSeries.push({
-          name: '中证全指(归一化)', type: 'line', yAxisIndex: 0,
+          name: '中证全指(归一化)', type: 'line', yAxisIndex: 1,
           data: normalized,
           lineStyle: { color: '#FF7D00', width: 1.5, type: 'dashed' },
           itemStyle: { color: '#FF7D00' },
@@ -186,9 +188,15 @@ const FactorChart: React.FC = () => {
     let subYAxis: any = {};
     if (subChart === 'volume' && displayData[0]?.amount != null) {
       const vol = displayData.map((d: any) => d.amount ?? 0);
+      // 成交额相对全市场占比（%）
+      const bmMap = new Map(benchmarkData.map((d: any) => [d.trade_date, d.amount ?? d.close]));
+      const volRatio = dates.map((d, i) => {
+        const bm = bmMap.get(d);
+        return (bm && bm > 0) ? (vol[i] / bm) * 100 : null;
+      });
       const colors = displayData.map((d: any) => (d.close >= d.open ? '#F53F3F' : '#00B42A'));
-      subSeries.push({ name: '成交额', type: 'bar', xAxisIndex: 1, yAxisIndex: 2, data: vol, itemStyle: { color: (p: any) => colors[p.dataIndex] } });
-      const ma5 = calcSMA(vol, 5);
+      subSeries.push({ name: '成交额占比%', type: 'bar', xAxisIndex: 1, yAxisIndex: 2, data: volRatio, itemStyle: { color: (p: any) => colors[p.dataIndex] } });
+      const ma5 = calcSMA(volRatio.map(v => v ?? 0), 5);
       if (ma5.some(v => v != null)) subSeries.push({ name: 'MA5', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: ma5, lineStyle: { color: '#FF7D00', width: 1 }, symbol: 'none' });
       subYAxis = { type: 'value', gridIndex: 1, splitNumber: 3, axisLabel: { fontSize: 10 } };
     } else if (subChart === 'macd' && macd.dif.length > 0) {
@@ -279,23 +287,24 @@ const FactorChart: React.FC = () => {
         </label>
       </div>
 
-      {/* 统计语义卡片 */}
-      {latestFactorValue != null && (
+      {/* 统计语义卡片（随光标变化） */}
+      {currentFactorValue != null && (
         <div style={{ display: 'flex', gap: 16, marginBottom: 12, fontSize: 13, color: '#555' }}>
           <span>
-            {factorNameCn}: <b style={{ color: factorColor, fontSize: 15 }}>{latestFactorValue.toFixed(1)}</b>
+            {cursorIndex != null ? `📅 ${dates[cursorIndex]}` : '最新'} —
+            {factorNameCn}: <b style={{ color: factorColor, fontSize: 15 }}>{currentFactorValue.toFixed(1)}</b>
           </span>
-          {latestPercentile != null && (
+          {currentPercentile != null && (
             <span>
-              历史百分位: <b style={{ color: latestPercentile > 90 ? '#F53F3F' : latestPercentile < 10 ? '#00B42A' : '#555' }}>
-                {latestPercentile}%
+              历史百分位: <b style={{ color: currentPercentile > 90 ? '#F53F3F' : currentPercentile < 10 ? '#00B42A' : '#555' }}>
+                {currentPercentile}%
               </b>
             </span>
           )}
-          {latestZscore != null && (
+          {currentZscore != null && (
             <span>
-              Z-score: <b style={{ color: Math.abs(latestZscore) > 2 ? '#F53F3F' : '#555' }}>
-                {latestZscore > 0 ? '+' : ''}{latestZscore.toFixed(2)}σ
+              Z-score: <b style={{ color: Math.abs(currentZscore) > 2 ? '#F53F3F' : '#555' }}>
+                {currentZscore > 0 ? '+' : ''}{currentZscore.toFixed(2)}σ
               </b>
             </span>
           )}
@@ -310,6 +319,12 @@ const FactorChart: React.FC = () => {
         style={{ height: 650, width: '100%' }}
         notMerge
         lazyUpdate
+        onEvents={{
+          mouseover: (params: any) => {
+            if (params?.dataIndex != null) setCursorIndex(params.dataIndex);
+          },
+          mouseout: () => setCursorIndex(null),
+        }}
       />
     </div>
   );

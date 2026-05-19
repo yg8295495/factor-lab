@@ -220,6 +220,7 @@ FEATURE_REGISTRY: Dict[str, FeatureDef] = {
         compute_fn='calc_percentile',
         params={'field': 'pe_ttm', 'window': 250},
         dependencies=['pe_ttm'],
+        storage='pe_ttm_pct',
         display={'color': '#fa8c16', 'chart': 'line', 'y_axis': 'left'},
     ),
 
@@ -232,6 +233,7 @@ FEATURE_REGISTRY: Dict[str, FeatureDef] = {
         compute_fn='calc_change_rate',
         params={'field': 'pe_ttm', 'lookback': 20},
         dependencies=['pe_ttm'],
+        storage='pe_change_rate',
         display={'color': '#d4380d', 'chart': 'line', 'y_axis': 'left'},
         default_normalization='zscore',
     ),
@@ -259,6 +261,7 @@ FEATURE_REGISTRY: Dict[str, FeatureDef] = {
         compute_fn='calc_price_vol_divergence',
         params={'lookback': 5},
         dependencies=['close', 'volume'],
+        storage='price_vol_divergence',
         display={'color': '#f5222d', 'chart': 'line', 'y_axis': 'left'},
         default_normalization='zscore',
     ),
