@@ -1,7 +1,7 @@
 # 数据库（不提交，首次克隆后重建）
-data/quant_engine.db
-data/quant_engine.db-shm
-data/quant_engine.db-wal
+*.db
+*.db-shm
+*.db-wal
 
 # Python
 __pycache__/
