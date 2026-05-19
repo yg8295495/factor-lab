@@ -10,31 +10,33 @@
 ```bash
 cd factor-lab
 
-# 添加 Gitee 远程（主力）
-git remote add origin https://gitee.com/你的用户名/factor-lab.git
+# 1. 先加 Gitee
+git remote add origin https://gitee.com/sunshine85/factor-lab.git
 
-# 推送
+# 2. 再加 GitHub
+git remote set-url --add origin https://github.com/yg8295495/factor-lab.git
+
+# 3. 推送（自动走两个地址）
 git push -u origin master
-
-# 添加 GitHub 远程（备份）
-git remote set-url --add origin https://github.com/你的用户名/factor-lab.git
-
-# 以后 git push 会自动推两个地址
 ```
 
-### 方案B：只用 Gitee
+### 方案B：拆成两个独立 remote（推荐，更清楚）
 
 ```bash
 cd factor-lab
-git remote add origin https://gitee.com/你的用户名/factor-lab.git
-git push -u origin master
+
+git remote add origin https://gitee.com/sunshine85/factor-lab.git
+git remote add github https://github.com/yg8295495/factor-lab.git
+
+git push origin master
+git push -u github master
 ```
 
 ## macOS 上克隆
 
 ```bash
-git clone https://gitee.com/你的用户名/factor-lab.git
+git clone https://gitee.com/sunshine85/factor-lab.git
 cd factor-lab
-python backend/rebuild_db.py    # 重建数据库（.gitignore 排除了 db 文件）
+python backend/rebuild_db.py    # 重建数据库
 # 开工
 ```
