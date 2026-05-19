@@ -146,7 +146,32 @@ const FactorChart: React.FC = () => {
     const isKline = displayData[0]?.open != null;
     const mainSeries: any[] = [];
 
-    if (isKline) {
+    // ── 价格比较模式 vs 普通模式 ──
+    const isPriceCompare = showBenchmark && benchmarkData.length > 0;
+
+    if (isPriceCompare) {
+      // 双K线归一化到100，共用左轴
+      const firstClose = displayData.find((d: any) => d.close != null)?.close ?? 1;
+      mainSeries.push({
+        name: '标的(归一化)', type: 'candlestick', yAxisIndex: 0,
+        data: displayData.map((d: any) => [
+          (d.open / firstClose) * 100, (d.close / firstClose) * 100,
+          (d.low / firstClose) * 100, (d.high / firstClose) * 100,
+        ]),
+        itemStyle: { color: '#F53F3F', color0: '#00B42A', borderColor: '#F53F3F', borderColor0: '#00B42A' },
+      });
+      // 基准归一化线
+      const bmMap = new Map(benchmarkData.map((d: any) => [d.trade_date, d.close]));
+      const bmAligned = dates.map(d => bmMap.get(d) ?? null);
+      const firstBm = bmAligned.find(v => v != null) ?? 1;
+      const bmNormalized = bmAligned.map(v => v != null ? (v / firstBm) * 100 : null);
+      mainSeries.push({
+        name: '中证全指', type: 'line', yAxisIndex: 0,
+        data: bmNormalized,
+        lineStyle: { color: '#FF7D00', width: 1.5, type: 'dashed' },
+        itemStyle: { color: '#FF7D00' }, symbol: 'none',
+      });
+    } else if (isKline) {
       mainSeries.push({
         name: 'K线', type: 'candlestick', yAxisIndex: 0,
         data: displayData.map((d: any) => [d.open, d.close, d.low, d.high]),
@@ -159,22 +184,7 @@ const FactorChart: React.FC = () => {
       });
     }
 
-    // 基准指数（归一化到100叠加）
-    if (showBenchmark && benchmarkData.length > 0) {
-      const bmMap = new Map(benchmarkData.map((d: any) => [d.trade_date, d.close]));
-      const aligned = dates.map(d => bmMap.get(d) ?? null);
-      const firstVal = aligned.find(v => v != null);
-      if (firstVal) {
-        const normalized = aligned.map(v => v != null ? (v / firstVal) * 100 : null);
-        mainSeries.push({
-          name: '中证全指(归一化)', type: 'line', yAxisIndex: 1,
-          data: normalized,
-          lineStyle: { color: '#FF7D00', width: 1.5, type: 'dashed' },
-          itemStyle: { color: '#FF7D00' },
-          symbol: 'none',
-        });
-      }
-    }
+    // 因子线（右轴）
     if (alignedFactorValues.length > 0) {
       mainSeries.push({
         name: factorNameCn, type: 'line', yAxisIndex: 1,
@@ -189,7 +199,11 @@ const FactorChart: React.FC = () => {
     if (subChart === 'volume' && displayData[0]?.amount != null) {
       const vol = displayData.map((d: any) => d.amount ?? 0);
       // 成交额相对全市场占比（%）
-      const bmMap = new Map(benchmarkData.map((d: any) => [d.trade_date, d.amount ?? d.close]));
+      const bmMap = new Map((benchmarkData || []).map((d: any) => [d.trade_date, d.amount ?? d.close]));
+      const volRatio = dates.map((d, i) => {
+        const bm = bmMap.get(d);
+        return (bm && bm > 0 && vol[i]) ? (vol[i] / bm) * 100 : null;
+      });
       const volRatio = dates.map((d, i) => {
         const bm = bmMap.get(d);
         return (bm && bm > 0) ? (vol[i] / bm) * 100 : null;
@@ -320,7 +334,7 @@ const FactorChart: React.FC = () => {
         notMerge
         lazyUpdate
         onEvents={{
-          mouseover: (params: any) => {
+          mouseover: (params: any, event: any) => {
             if (params?.dataIndex != null) setCursorIndex(params.dataIndex);
           },
           mouseout: () => setCursorIndex(null),
