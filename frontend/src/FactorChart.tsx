@@ -128,6 +128,7 @@ const FactorChart: React.FC = () => {
 
   // 当前光标位置（用于动态统计）
   const [cursorIndex, setCursorIndex] = useState<number | null>(null);
+  const chartInstanceRef = useRef<any>(null);
   const currentFactorValue = cursorIndex != null ? alignedFactorValues[cursorIndex] ?? null
     : (alignedFactorValues.filter(v => v != null).slice(-1)[0] ?? null);
   const factorHistory = factorData.map((d: any) => d.factor_value).filter((v: any) => v != null);
@@ -139,6 +140,13 @@ const FactorChart: React.FC = () => {
   const factorDef = factors.find(f => f.name === selectedFactor);
   const factorNameCn = factorDef?.name_cn || selectedFactor;
   const factorColor = factorDef?.display?.color || '#ff6600';
+  // 全量百分位/Z-score 数组（给 tooltip 用）
+  const factorAllValues = factorData.map((d: any) => d.factor_value).filter((v: any) => v != null);
+  const pctArray = alignedFactorValues.map(v => 
+    v != null && factorAllValues.length > 0 ? calcPercentile(v, factorAllValues) : null);
+  const zArray = alignedFactorValues.map(v => 
+    v != null && factorAllValues.length > 0 ? calcZscore(v, factorAllValues) : null);
+
   const factorDesc = factorDef?.description || '';
 
   const option = useMemo(() => {
@@ -204,22 +212,18 @@ const FactorChart: React.FC = () => {
         const bm = bmMap.get(d);
         return (bm && bm > 0 && vol[i]) ? (vol[i] / bm) * 100 : null;
       });
-      const volRatio = dates.map((d, i) => {
-        const bm = bmMap.get(d);
-        return (bm && bm > 0) ? (vol[i] / bm) * 100 : null;
-      });
       const colors = displayData.map((d: any) => (d.close >= d.open ? '#F53F3F' : '#00B42A'));
-      subSeries.push({ name: '成交额占比%', type: 'bar', xAxisIndex: 1, yAxisIndex: 2, data: volRatio, itemStyle: { color: (p: any) => colors[p.dataIndex] } });
+      subSeries.push({ name: '成交额占比%', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: volRatio, lineStyle: { color: '#722ED1', width: 2 }, itemStyle: { color: '#722ED1' }, symbol: 'none', areaStyle: { color: 'rgba(114,46,209,0.1)' } });
       const ma5 = calcSMA(volRatio.map(v => v ?? 0), 5);
-      if (ma5.some(v => v != null)) subSeries.push({ name: 'MA5', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: ma5, lineStyle: { color: '#FF7D00', width: 1 }, symbol: 'none' });
-      subYAxis = { type: 'value', gridIndex: 1, splitNumber: 3, axisLabel: { fontSize: 10 } };
+      if (ma5.some(v => v != null)) subSeries.push({ name: 'MA5', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: ma5, lineStyle: { color: '#b37feb', width: 1 }, symbol: 'none' });
+      subYAxis = { type: 'value', gridIndex: 1, splitNumber: 3, axisLabel: { fontSize: 10, formatter: (v: number) => v.toFixed(2) } };
     } else if (subChart === 'macd' && macd.dif.length > 0) {
       subSeries.push(
         { name: 'DIF', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: macd.dif, lineStyle: { color: '#fff', width: 1.5 }, symbol: 'none' },
         { name: 'DEA', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: macd.dea, lineStyle: { color: '#ff0', width: 1.5 }, symbol: 'none' },
         { name: 'MACD', type: 'bar', xAxisIndex: 1, yAxisIndex: 2, data: macd.macd, itemStyle: { color: (p: any) => (p.value >= 0 ? '#F53F3F' : '#00B42A') } },
       );
-      subYAxis = { type: 'value', gridIndex: 1, splitNumber: 3, axisLabel: { fontSize: 10 } };
+      subYAxis = { type: 'value', gridIndex: 1, splitNumber: 3, axisLabel: { fontSize: 10, formatter: (v: number) => v.toFixed(2) } };
     }
 
     return {
@@ -227,10 +231,23 @@ const FactorChart: React.FC = () => {
         trigger: 'axis', axisPointer: { type: 'cross', link: [{ xAxisIndex: [0, 1] }] },
         formatter: (params: any) => {
           const date = params[0]?.axisValue || '';
+          const idx = params[0]?.dataIndex;
           let html = `<b>${date}</b><br/>`;
           params.forEach((p: any) => {
-            if (p.seriesName !== 'K线') html += `${p.marker} ${p.seriesName}: ${typeof p.value === 'number' ? p.value.toFixed(2) : p.value}<br/>`;
+            if (Array.isArray(p.value)) {
+              // K线: 只显示收盘价
+              html +=`${p.marker} ${p.seriesName}: ${(+p.value[1]).toFixed(2)}<br/>`;
+            } else {
+              html +=`${p.marker} ${p.seriesName}: ${typeof p.value === 'number' ? p.value.toFixed(2) : p.value}<br/>`;
+            }
           });
+          // 因子统计
+          if (idx != null && pctArray && pctArray[idx] != null) {
+            html += '<div style="margin-top:4px;padding-top:4px;border-top:1px solid #444">';
+            html += '📊 百分位: <b>' + pctArray[idx].toFixed(0) + '%</b> ';
+            html += 'Z-score: <b>' + (zArray[idx] > 0 ? '+' : '') + zArray[idx].toFixed(2) + 'σ</b>';
+            html += '</div>';
+          }
           return html;
         },
       },
@@ -244,8 +261,8 @@ const FactorChart: React.FC = () => {
         { type: 'category', data: dates, gridIndex: 1, axisLabel: { show: false } },
       ],
       yAxis: [
-        { type: 'value', gridIndex: 0, scale: true, splitNumber: 4 },
-        { type: 'value', gridIndex: 0, scale: true, splitNumber: 4, splitLine: { show: false } },
+        { type: 'value', gridIndex: 0, scale: true, splitNumber: 4, axisLabel: { formatter: (v: number) => v.toFixed(2) } },
+        { type: 'value', gridIndex: 0, scale: true, splitNumber: 4, splitLine: { show: false }, axisLabel: { formatter: (v: number) => v.toFixed(2) } },
         subYAxis,
       ],
       dataZoom: [
@@ -303,26 +320,35 @@ const FactorChart: React.FC = () => {
 
       {/* 统计语义卡片（随光标变化） */}
       {currentFactorValue != null && (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 12, fontSize: 13, color: '#555' }}>
+        <div style={{ display: 'flex', gap: 16, marginBottom: 12, fontSize: 13, color: '#555', alignItems: 'center' }}>
           <span>
-            {cursorIndex != null ? `📅 ${dates[cursorIndex]}` : '最新'} —
+            {cursorIndex != null && dates[cursorIndex] ? `📅 ${dates[cursorIndex]}` : '最新'} —
             {factorNameCn}: <b style={{ color: factorColor, fontSize: 15 }}>{currentFactorValue.toFixed(1)}</b>
           </span>
           {currentPercentile != null && (
             <span>
-              历史百分位: <b style={{ color: currentPercentile > 90 ? '#F53F3F' : currentPercentile < 10 ? '#00B42A' : '#555' }}>
+              历史百分位: <b style={{
+                color: currentPercentile > 90 ? '#F53F3F' : currentPercentile < 10 ? '#00B42A' : '#555',
+                fontWeight: Math.abs(currentPercentile - 50) > 40 ? 700 : 400,
+              }}>
                 {currentPercentile}%
               </b>
             </span>
           )}
           {currentZscore != null && (
             <span>
-              Z-score: <b style={{ color: Math.abs(currentZscore) > 2 ? '#F53F3F' : '#555' }}>
+              Z-score: <b style={{
+                color: Math.abs(currentZscore) > 2 ? '#F53F3F' : '#555',
+                fontWeight: Math.abs(currentZscore) > 1.5 ? 700 : 400,
+              }}>
                 {currentZscore > 0 ? '+' : ''}{currentZscore.toFixed(2)}σ
               </b>
             </span>
           )}
-          <span style={{ color: '#999', cursor: 'help' }} title={factorDesc}>ⓘ</span>
+          <span style={{ flex: 1 }} />
+          <span style={{ color: '#999', fontSize: 12, maxWidth: 400, textAlign: 'right' }} title={factorDesc}>
+            {factorDesc}
+          </span>
         </div>
       )}
 
@@ -333,11 +359,12 @@ const FactorChart: React.FC = () => {
         style={{ height: 650, width: '100%' }}
         notMerge
         lazyUpdate
-        onEvents={{
-          mouseover: (params: any, event: any) => {
+        onChartReady={(instance: any) => {
+          chartInstanceRef.current = instance;
+          instance.on('mouseover', (params: any) => {
             if (params?.dataIndex != null) setCursorIndex(params.dataIndex);
-          },
-          mouseout: () => setCursorIndex(null),
+          });
+          instance.on('mouseout', () => setCursorIndex(null));
         }}
       />
     </div>

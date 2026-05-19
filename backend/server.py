@@ -3,11 +3,26 @@
 启动: uvicorn backend.server:app --reload --port 8000
 """
 
+import sys
 import sqlite3
 import json
 from pathlib import Path
+
+# 确保能导入 research 模块
+_sr = Path(__file__).resolve().parent  # backend/
+if str(_sr) not in sys.path:
+    sys.path.insert(0, str(_sr))
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
+
+# 延迟导入 registry（解决 uvicorn 路径问题）
+_registry = None
+def get_registry():
+    global _registry
+    if _registry is None:
+        from research.features.registry import FEATURE_REGISTRY
+        _registry = FEATURE_REGISTRY
+    return _registry
 
 DB_PATH = Path(__file__).resolve().parents[1] / 'data' / 'quant_engine.db'
 app = FastAPI(title='factor-lab API')
@@ -90,7 +105,7 @@ def get_factor_data(
     获取指定资产的指定因子时序数据（含价格+因子）。
     factor 为 registry 中的因子名，如 RS20
     """
-    from research.features.registry import FEATURE_REGISTRY
+    FEATURE_REGISTRY = get_registry()
 
     if factor not in FEATURE_REGISTRY:
         return {'error': f'因子 {factor} 不存在'}

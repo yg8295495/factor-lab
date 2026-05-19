@@ -95,6 +95,7 @@ FEATURE_REGISTRY: Dict[str, FeatureDef] = {
         compute_fn='calc_rs_slope',
         params={'lookback': 20, 'rs_source': 'RS20'},
         dependencies=['rs20_cross'],
+        storage='rs_slope',
         display={'color': '#cc4400', 'chart': 'line', 'y_axis': 'right'},
         default_normalization='zscore',
     ),

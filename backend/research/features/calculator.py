@@ -192,6 +192,7 @@ def calc_tier1_factors(symbol, db):
     results['rs60_cross'] = calc_rs(asset_df, lookback=60)
     results['time_momentum20'] = calc_time_momentum(asset_df, lookback=20)
     results['time_momentum60'] = calc_time_momentum(asset_df, lookback=60)
+    results['rs_slope'] = calc_rs_slope(asset_df)
     results['trend_strength'] = calc_trend_strength(asset_df)
     results['breakout_strength'] = calc_breakout(asset_df)
 
@@ -223,14 +224,15 @@ def calc_tier1_factors(symbol, db):
         field_map = {
             'rs20_cross': 'rs20_cross',
             'rs60_cross': 'rs60_cross',
+            'rs_slope': 'rs_slope',
             'time_momentum20': 'time_momentum20',
             'time_momentum60': 'time_momentum60',
             'trend_strength': 'trend_strength',
             'breakout_strength': 'breakout_strength',
-            'pe_ttm_pct': None,  # 暂不写入DB字段，先留着
-            'pe_change_rate': None,
-            'dividend_yield_pct': None,
-            'price_vol_divergence': None,
+            'pe_ttm_pct': 'pe_ttm_pct',
+            'pe_change_rate': 'pe_change_rate',
+            'dividend_yield_pct': 'dividend_yield_pct',
+            'price_vol_divergence': 'price_vol_divergence',
         }
 
         for key, db_field in field_map.items():

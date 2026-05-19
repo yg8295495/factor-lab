@@ -47,31 +47,29 @@ Phase 4 ─ 结构研究 + qlib 对接
 - [x] **`PLAN.md`** — 本文件
 - [x] **数据库导入 & 确认** — `quant_engine.db` 已复制到 `data/`，6 张表结构完全匹配 spec ✅
 
-### 📌 当前 Phase 1 状态
+### ✅ 当前完成状态 (2026-05-20)
 
-> **数据库已就位：55个资产，51个有数据（宽基已更新至2026-05-19，申万截止05-15）**
-> **4个缺失资产暂缺：990001/930713/931719/000819（东财系统无此代码）**
+| 模块 | 状态 | 说明 |
+|------|:----:|------|
+| 数据库 | ✅ 完成 | 55资产, 239,651行, 全部2026-05-19, 含PE_TTM |
+| 数据源调研 | ✅ 完成 | 3个统一入口: CSI/申万/腾讯+Daily |
+| ORM模型 | ✅ 完成 | database.py + models.py |
+| Feature Registry | ✅ 完成 | 17个因子, Four Dimensions |
+| 因子计算引擎 | ✅ 完成 | calculator.py (Tier1+Tier2), 已写入DB |
+| FactorChart | ✅ 完成 | React + ECharts, 双轴, 基准叠加, 成交额占比 |
+| FastAPI 服务 | ✅ 完成 | backend/server.py, port 8000 |
+| 数据采集清单 | ✅ 完成 | docs/data_collection_manifest.md |
+| 踩坑记录 | ✅ 完成 | docs/data_source_troubleshooting.md |
+| Git 远程 | ✅ 完成 | Gitee + GitHub 双远程 |
 
-#### ✅ 已完成
+#### 📝 后续方向
 
-- [x] 数据库一键重建（55个资产，239,651行，全部 2026-05-19）
-- [x] 数据源踩坑记录 → `docs/data_source_troubleshooting.md`
-- [x] 数据采集清单 → `docs/data_collection_manifest.md`（含知识库/移植指南）
-- [x] 完成全部数据源调研 → 已测试可用/不可用/需日频积累 三类清单
-- [x] 确认统一采集方案：CSI接口(25指数+PE) + 申万接口(30行业) + Daily+腾讯(创业板)
-- [x] database.py + models.py（ORM模型）
-- [x] Feature Registry（17个因子，Four Dimensions）
-
-#### 📝 接下来（按优先级）
-
-| 优先级 | 任务 | 文件 |
+| 优先级 | 方向 | 说明 |
 |--------|------|------|
-| **P0** | `database.py + models.py` — ORM 模型 | `backend/data/database.py`, `models.py` |
-| **P0** | `Feature Registry` — 按 Four Dimensions 定义14个因子 | `backend/research/features/registry.py` |
-| **P1** | `calculator.py` — 因子计算引擎（Tier 1 + Tier 2） | `backend/research/features/calculator.py` |
-| **P1** | 申万数据更新 — 用 `index_hist_sw()` 批量更新到最新 | `backend/collectors/sw_daily.py` |
-| **P2** | 提取 DualAxisChart → 泛化为 FactorChart | `frontend/FactorChart.tsx` |
-| **P3** | 4个缺失资产的补采方案 | 待定 |
+| **P0** | 进入 Feature Research Sprint | 用 FactorChart 观察因子历史行为, 记录到 tracker.py |
+| **P1** | 市场状态标注 | 人工标注 → 手动 replay → 积累认知 |
+| **P2** | Layer 3 结构识别 | 组合因子 → 识别主升/退潮/混沌/抱团 |
+| **P3** | 迁移到 macOS | 参考 SETUP_GIT.md 和 setup.ps1 |
 
 #### 因子清单（确认不变）
 
