@@ -2,7 +2,7 @@ import FactorChart from './FactorChart'
 
 function App() {
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px' }}>
+    <div style={{ width: '100%', padding: '16px 24px', boxSizing: 'border-box' }}>
       <FactorChart />
     </div>
   )

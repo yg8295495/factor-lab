@@ -273,7 +273,7 @@ const FactorChart: React.FC = () => {
       <EChartsReact
         ref={chartRef}
         option={option}
-        style={{ height: 520, width: '100%' }}
+        style={{ height: 650, width: '100%' }}
         notMerge
         lazyUpdate
       />
