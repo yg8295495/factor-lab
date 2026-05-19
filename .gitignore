@@ -1,0 +1,20 @@
+# 数据库（不提交，首次克隆后重建）
+data/quant_engine.db
+data/quant_engine.db-shm
+data/quant_engine.db-wal
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# 日志
+logs/

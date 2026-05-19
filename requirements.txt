@@ -1,0 +1,18 @@
+# factor-lab 依赖
+# 数据采集
+akshare>=1.14.0
+baostock>=0.8.8
+
+# 数据库
+sqlalchemy>=2.0
+
+# 数据分析
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+
+# 可视化（前端）
+# 见 frontend/package.json
+
+# 回测（可选）
+# qlib 需单独安装: pip install pyqlib
