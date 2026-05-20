@@ -56,10 +56,11 @@ Phase 4 ─ 结构研究 + qlib 对接
 | ORM模型 | ✅ 完成 | database.py + models.py |
 | Feature Registry | ✅ 完成 | 17个因子, Four Dimensions |
 | 因子计算引擎 | ✅ 完成 | calculator.py (Tier1+Tier2), 已写入DB |
-| FactorChart | ✅ 完成 | React + ECharts, 双轴, 基准叠加, 成交额占比 |
+| FactorChart | ✅ 完成 | 十字光标联动 · 成交额占比历史分位 · tooltip 主副图分层 |
 | FastAPI 服务 | ✅ 完成 | backend/server.py, port 8000 |
 | 数据采集清单 | ✅ 完成 | docs/data_collection_manifest.md |
 | 踩坑记录 | ✅ 完成 | docs/data_source_troubleshooting.md |
+| macOS 迁移 | ✅ 完成 | docs/macos_migration.md + start.sh 一键启动 |
 | Git 远程 | ✅ 完成 | Gitee + GitHub 双远程 |
 
 #### 📝 后续方向
@@ -69,7 +70,6 @@ Phase 4 ─ 结构研究 + qlib 对接
 | **P0** | 进入 Feature Research Sprint | 用 FactorChart 观察因子历史行为, 记录到 tracker.py |
 | **P1** | 市场状态标注 | 人工标注 → 手动 replay → 积累认知 |
 | **P2** | Layer 3 结构识别 | 组合因子 → 识别主升/退潮/混沌/抱团 |
-| **P3** | 迁移到 macOS | 参考 SETUP_GIT.md 和 setup.ps1 |
 
 #### 因子清单（确认不变）
 

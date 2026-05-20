@@ -16,3 +16,7 @@ scipy>=1.10
 
 # 回测（可选）
 # qlib 需单独安装: pip install pyqlib
+
+#后端依赖
+uvicorn
+fastapi

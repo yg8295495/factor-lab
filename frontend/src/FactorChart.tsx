@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import EChartsReact from 'echarts-for-react';
-import * as echarts from 'echarts';
 
 // 注册 ECharts 组件
 import 'echarts/charts';
@@ -97,14 +96,13 @@ const FactorChart: React.FC = () => {
     }).catch(e => { setError(`加载数据失败: ${e.message}`); setLoading(false); });
   }, [selectedAsset, selectedFactor]);
 
-  // 加载基准数据
+  // 加载基准数据（成交额占比计算依赖基准，始终加载；showBenchmark 只控制是否画线）
   useEffect(() => {
-    if (!showBenchmark) { setBenchmarkData([]); return; }
     fetch(`${API_BASE}/api/data/index.000985.SH?fields=trade_date,close,amount&limit=5000`)
       .then(r => r.json())
       .then(data => setBenchmarkData((data || []).reverse()))
       .catch(() => {});
-  }, [showBenchmark, selectedAsset]);
+  }, [selectedAsset]);
 
   const displayData = useMemo(() => {
     if (rawData.length === 0) return [];
@@ -126,16 +124,23 @@ const FactorChart: React.FC = () => {
     return dates.map(d => dateMap.get(d) ?? null);
   }, [factorData, dates]);
 
-  // 当前光标位置（用于动态统计）
-  const [cursorIndex, setCursorIndex] = useState<number | null>(null);
-  const chartInstanceRef = useRef<any>(null);
-  const currentFactorValue = cursorIndex != null ? alignedFactorValues[cursorIndex] ?? null
-    : (alignedFactorValues.filter(v => v != null).slice(-1)[0] ?? null);
-  const factorHistory = factorData.map((d: any) => d.factor_value).filter((v: any) => v != null);
-  const currentPercentile = currentFactorValue != null && factorHistory.length > 0
-    ? calcPercentile(currentFactorValue, factorHistory) : null;
-  const currentZscore = currentFactorValue != null && factorHistory.length > 0
-    ? calcZscore(currentFactorValue, factorHistory) : null;
+  // (无外部状态栏，tooltip 使用 ECharts 原生的轴指针)
+
+  // 成交额占比历史序列（用于联动分位显示）
+  const volRatioHistory = useMemo(() => {
+    if (displayData.length === 0 || subChart !== 'volume' || !displayData[0]?.amount || benchmarkData.length === 0) return [];
+    const vol = displayData.map((d: any) => d.amount ?? 0);
+    const bmMap = new Map(benchmarkData.map((d: any) => [d.trade_date, d.amount ?? d.close]));
+    return dates.map((d, i) => {
+      const bm = bmMap.get(d);
+      return (bm && bm > 0 && vol[i]) ? (vol[i] / bm) * 100 : null;
+    });
+  }, [displayData, benchmarkData, dates, subChart]);
+
+  const volRatioAllValues = volRatioHistory.filter((v): v is number => v != null);
+  const volRatioPctArray = volRatioHistory.map(v =>
+    v != null && volRatioAllValues.length > 0 ? calcPercentile(v, volRatioAllValues) : null
+  );
 
   const factorDef = factors.find(f => f.name === selectedFactor);
   const factorNameCn = factorDef?.name_cn || selectedFactor;
@@ -146,8 +151,6 @@ const FactorChart: React.FC = () => {
     v != null && factorAllValues.length > 0 ? calcPercentile(v, factorAllValues) : null);
   const zArray = alignedFactorValues.map(v => 
     v != null && factorAllValues.length > 0 ? calcZscore(v, factorAllValues) : null);
-
-  const factorDesc = factorDef?.description || '';
 
   const option = useMemo(() => {
     if (displayData.length === 0) return {};
@@ -212,7 +215,6 @@ const FactorChart: React.FC = () => {
         const bm = bmMap.get(d);
         return (bm && bm > 0 && vol[i]) ? (vol[i] / bm) * 100 : null;
       });
-      const colors = displayData.map((d: any) => (d.close >= d.open ? '#F53F3F' : '#00B42A'));
       subSeries.push({ name: '成交额占比%', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: volRatio, lineStyle: { color: '#722ED1', width: 2 }, itemStyle: { color: '#722ED1' }, symbol: 'none', areaStyle: { color: 'rgba(114,46,209,0.1)' } });
       const ma5 = calcSMA(volRatio.map(v => v ?? 0), 5);
       if (ma5.some(v => v != null)) subSeries.push({ name: 'MA5', type: 'line', xAxisIndex: 1, yAxisIndex: 2, data: ma5, lineStyle: { color: '#b37feb', width: 1 }, symbol: 'none' });
@@ -228,28 +230,54 @@ const FactorChart: React.FC = () => {
 
     return {
       tooltip: {
-        trigger: 'axis', axisPointer: { type: 'cross', link: [{ xAxisIndex: [0, 1] }] },
+        trigger: 'axis', axisPointer: { type: 'cross' },
         formatter: (params: any) => {
           const date = params[0]?.axisValue || '';
           const idx = params[0]?.dataIndex;
+          // ── 主图信息 ──
           let html = `<b>${date}</b><br/>`;
-          params.forEach((p: any) => {
-            if (Array.isArray(p.value)) {
-              // K线: 只显示收盘价
-              html +=`${p.marker} ${p.seriesName}: ${(+p.value[1]).toFixed(2)}<br/>`;
-            } else {
-              html +=`${p.marker} ${p.seriesName}: ${typeof p.value === 'number' ? p.value.toFixed(2) : p.value}<br/>`;
+          // K线: 只取 close
+          const kline = params.find((p: any) => Array.isArray(p.value));
+          if (kline) html += `${kline.marker} 收盘: <b>${(+kline.value[1]).toFixed(2)}</b><br/>`;
+          // 因子
+          const factorParam = params.find((p: any) => !Array.isArray(p.value) && p.seriesName === factorNameCn);
+          if (factorParam) {
+            const fv = factorParam.value;
+            html += `${factorParam.marker} ${factorNameCn}: <b>${typeof fv === 'number' ? fv.toFixed(1) : fv}</b>`;
+            if (idx != null && pctArray && pctArray[idx] != null) {
+              html += ` &nbsp; 百分位 <b>${pctArray[idx]!.toFixed(0)}%</b>`;
+              html += ` &nbsp; Z <b>${(zArray[idx]! > 0 ? '+' : '') + zArray[idx]!.toFixed(2)}σ</b>`;
             }
-          });
-          // 因子统计
-          if (idx != null && pctArray && pctArray[idx] != null) {
-            html += '<div style="margin-top:4px;padding-top:4px;border-top:1px solid #444">';
-            html += '📊 百分位: <b>' + pctArray[idx].toFixed(0) + '%</b> ';
-            html += 'Z-score: <b>' + (zArray[idx] > 0 ? '+' : '') + zArray[idx].toFixed(2) + 'σ</b>';
-            html += '</div>';
+            html += '<br/>';
+          }
+          // ── 分割线 + 副图信息 ──
+          if (subChart === 'volume') {
+            const volParam = params.find((p: any) => p.seriesName === '成交额占比%');
+            const volVal = volParam ? volParam.value : (idx != null ? volRatioHistory[idx] : null);
+            if (volVal != null) {
+              html += '<div style="margin-top:2px;padding-top:4px;border-top:1px solid #555">';
+              html += '📊 成交额占比: <b>' + (+volVal).toFixed(2) + '%</b>';
+              const vp = idx != null && volRatioPctArray ? volRatioPctArray[idx] : null;
+              if (vp != null) html += ' &nbsp; 历史分位 <b>' + vp.toFixed(0) + '%</b>';
+              html += '</div>';
+            }
+          } else if (subChart === 'macd') {
+            const dif = params.find((p: any) => p.seriesName === 'DIF');
+            const dea = params.find((p: any) => p.seriesName === 'DEA');
+            const macdVal = params.find((p: any) => p.seriesName === 'MACD');
+            if (dif || dea || macdVal) {
+              html += '<div style="margin-top:2px;padding-top:4px;border-top:1px solid #555">';
+              if (dif) html += `DIF: ${(+dif.value).toFixed(2)} &nbsp; `;
+              if (dea) html += `DEA: ${(+dea.value).toFixed(2)} &nbsp; `;
+              if (macdVal) html += `MACD: ${(+macdVal.value).toFixed(2)}`;
+              html += '</div>';
+            }
           }
           return html;
         },
+      },
+      axisPointer: {
+        link: [{ xAxisIndex: [0, 1] }]
       },
       legend: { data: ['K线', factorNameCn, '成交额', 'MA5', 'DIF', 'DEA', 'MACD'].filter(Boolean), top: 0 },
       grid: [
@@ -271,7 +299,7 @@ const FactorChart: React.FC = () => {
       ],
       series: [...mainSeries, ...subSeries],
     };
-  }, [displayData, alignedFactorValues, macd, subChart, factorNameCn, factorColor]);
+  }, [displayData, alignedFactorValues, macd, subChart, factorNameCn, factorColor, volRatioHistory, volRatioPctArray]);
 
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#666' }}>加载中，请确保后端已启动 (uvicorn backend.server:app --port 8000)...</div>;
   if (error) return <div style={{ padding: 40, textAlign: 'center', color: '#F53F3F' }}>{error} — 确认后端已启动: uvicorn backend.server:app --port 8000</div>;
@@ -318,40 +346,6 @@ const FactorChart: React.FC = () => {
         </label>
       </div>
 
-      {/* 统计语义卡片（随光标变化） */}
-      {currentFactorValue != null && (
-        <div style={{ display: 'flex', gap: 16, marginBottom: 12, fontSize: 13, color: '#555', alignItems: 'center' }}>
-          <span>
-            {cursorIndex != null && dates[cursorIndex] ? `📅 ${dates[cursorIndex]}` : '最新'} —
-            {factorNameCn}: <b style={{ color: factorColor, fontSize: 15 }}>{currentFactorValue.toFixed(1)}</b>
-          </span>
-          {currentPercentile != null && (
-            <span>
-              历史百分位: <b style={{
-                color: currentPercentile > 90 ? '#F53F3F' : currentPercentile < 10 ? '#00B42A' : '#555',
-                fontWeight: Math.abs(currentPercentile - 50) > 40 ? 700 : 400,
-              }}>
-                {currentPercentile}%
-              </b>
-            </span>
-          )}
-          {currentZscore != null && (
-            <span>
-              Z-score: <b style={{
-                color: Math.abs(currentZscore) > 2 ? '#F53F3F' : '#555',
-                fontWeight: Math.abs(currentZscore) > 1.5 ? 700 : 400,
-              }}>
-                {currentZscore > 0 ? '+' : ''}{currentZscore.toFixed(2)}σ
-              </b>
-            </span>
-          )}
-          <span style={{ flex: 1 }} />
-          <span style={{ color: '#999', fontSize: 12, maxWidth: 400, textAlign: 'right' }} title={factorDesc}>
-            {factorDesc}
-          </span>
-        </div>
-      )}
-
       {/* 图表 */}
       <EChartsReact
         ref={chartRef}
@@ -359,13 +353,7 @@ const FactorChart: React.FC = () => {
         style={{ height: 650, width: '100%' }}
         notMerge
         lazyUpdate
-        onChartReady={(instance: any) => {
-          chartInstanceRef.current = instance;
-          instance.on('mouseover', (params: any) => {
-            if (params?.dataIndex != null) setCursorIndex(params.dataIndex);
-          });
-          instance.on('mouseout', () => setCursorIndex(null));
-        }}
+        onChartReady={() => {}}
       />
     </div>
   );
