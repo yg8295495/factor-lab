@@ -61,21 +61,23 @@ def load_all_assets(fields=None):
 
 def calc_rs(asset_df, lookback=20, method='rolling_mean_ratio'):
     """
-    相对强度 RS
+    相对强度 RS — 基于后复权 close (close_hfq)
     RS = (标的收盘 / 标的基准日收盘) / (基准收盘 / 基准基准日收盘) × 1
     method='rolling_mean_ratio': 标的收盘 / 标的20日均值
     method='point_to_point': 标的收盘 / 20天前的收盘
     """
-    close = asset_df['close']
-    # 获取基准数据
-    benchmark_df = load_asset_data(RS_BENCHMARK, fields=['close'])
+    close = asset_df['close_hfq']
+    # 获取基准数据（指数用后复权 close_hfq，若无则 fallback 到 close）
+    benchmark_df = load_asset_data(RS_BENCHMARK, fields=['close_hfq', 'close'])
     if benchmark_df.empty:
         return pd.Series(index=asset_df.index, dtype=float)
+    bench_col = 'close_hfq' if 'close_hfq' in benchmark_df.columns else 'close'
+    benchmark_close = benchmark_df[bench_col]
 
     # 对齐日期
     combined = pd.DataFrame({
         'close': close,
-        'benchmark_close': benchmark_df['close']
+        'benchmark_close': benchmark_close
     }).dropna()
 
     if method == 'rolling_mean_ratio':
@@ -104,8 +106,8 @@ def calc_rs_slope(asset_df, lookback=20):
 
 
 def calc_time_momentum(asset_df, lookback=20):
-    """时序动量 = 自身涨跌幅"""
-    close = asset_df['close']
+    """时序动量 = 自身涨跌幅（基于 close_hfq）"""
+    close = asset_df['close_hfq']
     mom = close / close.shift(lookback) - 1
     return mom * 100
 
@@ -139,8 +141,8 @@ def calc_change_rate(series, lookback=20):
 
 
 def calc_breakout(asset_df, lookback=20):
-    """突破强度 = (收盘 - 20日均线) / 20日均线"""
-    close = asset_df['close']
+    """突破强度 = (收盘 - 20日均线) / 20日均线（基于 close_hfq）"""
+    close = asset_df['close_hfq']
     ma = close.rolling(lookback).mean()
     return (close - ma) / ma * 100
 
@@ -157,11 +159,11 @@ def calc_dividend_yield_percentile(asset_df, window=250):
 
 def calc_price_vol_divergence(asset_df, lookback=5):
     """
-    量价背离度
+    量价背离度 — 基于 close_hfq 计算价格方向
     正数 = 价涨量缩（顶背离风险）
     负数 = 价跌量增（底背离机会）
     """
-    close = asset_df['close']
+    close = asset_df['close_hfq']
     volume = asset_df['volume'] if 'volume' in asset_df.columns else pd.Series(index=asset_df.index, dtype=float)
 
     if volume.isna().all():
@@ -182,8 +184,16 @@ def calc_price_vol_divergence(asset_df, lookback=5):
 def calc_tier1_factors(symbol, db):
     """计算单个资产的所有 Tier 1 因子"""
     asset_df = load_asset_data(symbol)
-    if asset_df.empty or 'close' not in asset_df.columns:
+    if asset_df.empty:
         return
+
+    # 个股有 close_hfq（后复权），行业/指数只有 close（无需复权）
+    # 统一为 close_hfq：对行业/指数，close_hfq = close
+    if 'close_hfq' not in asset_df.columns:
+        if 'close' in asset_df.columns:
+            asset_df['close_hfq'] = asset_df['close']
+        else:
+            return
 
     results = {}
 
@@ -266,16 +276,16 @@ def calc_adv_decline_ratio(db):
     # 逐行业加载收盘数据 → DataFrame（自动按日对齐）
     all_series = {}
     for sym in sw_symbols:
-        df = load_asset_data(sym, fields=['close'])
+        df = load_asset_data(sym, fields=['close_hfq'])
         if not df.empty:
-            all_series[sym] = df['close']
+            all_series[sym] = df['close_hfq']
 
     if not all_series:
         return
 
     sw_close = pd.DataFrame(all_series)
 
-    # 每日涨跌方向（只保留至少有一个行业有数据的日期）
+    # 每日涨跌方向（基于后复权 close，确保除权日不产生假涨跌）（只保留至少有一个行业有数据的日期）
     direction = sw_close.diff()
 
     # 逐日统计上涨/下跌数
@@ -296,7 +306,7 @@ def calc_industry_diffusion(db, threshold=50, lookback=20):
     # 逐个计算申万行业的RS20
     all_rs = {}
     for sym in sw_symbols:
-        asset_df = load_asset_data(sym, fields=['close'])
+        asset_df = load_asset_data(sym, fields=['close_hfq'])
         if not asset_df.empty:
             rs = calc_rs(asset_df, lookback=lookback)
             all_rs[sym] = rs
@@ -323,9 +333,9 @@ def calc_market_volatility(db, lookback=20):
     # 逐行业加载
     all_returns = {}
     for sym in sw_symbols:
-        df = load_asset_data(sym, fields=['close'])
+        df = load_asset_data(sym, fields=['close_hfq'])
         if not df.empty and len(df) > lookback:
-            ret = df['close'].pct_change(fill_method=None)
+            ret = df['close_hfq'].pct_change(fill_method=None)
             vol = ret.rolling(lookback).std() * np.sqrt(252) * 100
             all_returns[sym] = vol
 

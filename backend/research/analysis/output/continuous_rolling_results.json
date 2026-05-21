@@ -1,0 +1,151 @@
+{
+  "summary": {
+    "strategy_return_pct": 1165.2,
+    "benchmark_return_pct": 651.0,
+    "excess_return_pct": 514.1,
+    "total_trades": 252,
+    "win_rate": 52.8,
+    "strategy_max_drawdown_pct": -72.5,
+    "benchmark_max_drawdown_pct": -65.1,
+    "worst_drawdown_date": "2008-10-21"
+  },
+  "phase_analysis": [
+    {
+      "phase": "📈 bull #1",
+      "period": "2005-07-18~2008-01-14",
+      "trades": 30,
+      "wins": 16,
+      "win_rate": 53.3,
+      "avg_excess": 0.3,
+      "cum_excess": 8.8
+    },
+    {
+      "phase": "📉 bear #2",
+      "period": "2008-01-14~2008-11-04",
+      "trades": 10,
+      "wins": 5,
+      "win_rate": 50.0,
+      "avg_excess": -1.4,
+      "cum_excess": -13.7
+    },
+    {
+      "phase": "📈 bull #3",
+      "period": "2008-11-04~2009-11-23",
+      "trades": 13,
+      "wins": 8,
+      "win_rate": 61.5,
+      "avg_excess": 1.6,
+      "cum_excess": 20.7
+    },
+    {
+      "phase": "📉 bear #4",
+      "period": "2009-11-23~2012-12-03",
+      "trades": 37,
+      "wins": 21,
+      "win_rate": 56.8,
+      "avg_excess": 0.9,
+      "cum_excess": 31.9
+    },
+    {
+      "phase": "📈 bull #5",
+      "period": "2012-12-03~2015-06-12",
+      "trades": 30,
+      "wins": 17,
+      "win_rate": 56.7,
+      "avg_excess": 1.1,
+      "cum_excess": 33.0
+    },
+    {
+      "phase": "📉 bear #6",
+      "period": "2015-06-12~2016-01-28",
+      "trades": 8,
+      "wins": 5,
+      "win_rate": 62.5,
+      "avg_excess": 0.6,
+      "cum_excess": 5.1
+    },
+    {
+      "phase": "📈 bull #7",
+      "period": "2016-01-28~2016-11-28",
+      "trades": 10,
+      "wins": 7,
+      "win_rate": 70.0,
+      "avg_excess": 0.7,
+      "cum_excess": 7.2
+    },
+    {
+      "phase": "📉 bear #8",
+      "period": "2016-11-28~2018-10-18",
+      "trades": 23,
+      "wins": 13,
+      "win_rate": 56.5,
+      "avg_excess": 0.5,
+      "cum_excess": 12.0
+    },
+    {
+      "phase": "📈 bull #9",
+      "period": "2018-10-18~2021-12-13",
+      "trades": 38,
+      "wins": 18,
+      "win_rate": 47.4,
+      "avg_excess": 0.3,
+      "cum_excess": 10.0
+    },
+    {
+      "phase": "📉 bear #10",
+      "period": "2021-12-13~2024-02-05",
+      "trades": 26,
+      "wins": 9,
+      "win_rate": 34.6,
+      "avg_excess": -1.1,
+      "cum_excess": -29.5
+    },
+    {
+      "phase": "📈 bull #11",
+      "period": "2024-02-05~2024-11-11",
+      "trades": 9,
+      "wins": 5,
+      "win_rate": 55.6,
+      "avg_excess": 0.0,
+      "cum_excess": 0.4
+    },
+    {
+      "phase": "📉 bear #12",
+      "period": "2024-11-11~2025-04-07",
+      "trades": 5,
+      "wins": 2,
+      "win_rate": 40.0,
+      "avg_excess": -0.5,
+      "cum_excess": -2.3
+    },
+    {
+      "phase": "📈 bull #13",
+      "period": "2025-04-07~2026-05-19",
+      "trades": 12,
+      "wins": 7,
+      "win_rate": 58.3,
+      "avg_excess": -0.2,
+      "cum_excess": -1.8
+    }
+  ],
+  "worst_phases": [
+    {
+      "phase": "📉 bear #10",
+      "period": "2021-12-13~2024-02-05",
+      "cum_excess": -29.5,
+      "win_rate": 34.6
+    },
+    {
+      "phase": "📉 bear #2",
+      "period": "2008-01-14~2008-11-04",
+      "cum_excess": -13.7,
+      "win_rate": 50.0
+    },
+    {
+      "phase": "📉 bear #12",
+      "period": "2024-11-11~2025-04-07",
+      "cum_excess": -2.3,
+      "win_rate": 40.0
+    }
+  ]
+}

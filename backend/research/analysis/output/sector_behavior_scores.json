@@ -1,0 +1,227 @@
+[
+  {
+    "phase": "📈 Bull #1",
+    "bottom_date": "2005-07-18",
+    "end_date": "2008-01-14",
+    "top3_pred": [
+      {
+        "name": "化工",
+        "score": 7
+      },
+      {
+        "name": "有色金属",
+        "score": 6
+      },
+      {
+        "name": "电子",
+        "score": 6
+      }
+    ],
+    "top3_actual": [
+      {
+        "name": "有色金属",
+        "return_pct": 1135.1
+      },
+      {
+        "name": "房地产",
+        "return_pct": 877.3
+      },
+      {
+        "name": "商贸零售",
+        "return_pct": 741.9
+      }
+    ],
+    "hits": 1
+  },
+  {
+    "phase": "📈 Bull #2",
+    "bottom_date": "2008-11-04",
+    "end_date": "2009-11-23",
+    "top3_pred": [
+      {
+        "name": "有色金属",
+        "score": 6
+      },
+      {
+        "name": "电子",
+        "score": 6
+      },
+      {
+        "name": "食品饮料",
+        "score": 6
+      }
+    ],
+    "top3_actual": [
+      {
+        "name": "有色金属",
+        "return_pct": 267.7
+      },
+      {
+        "name": "社会服务",
+        "return_pct": 208.7
+      },
+      {
+        "name": "电子",
+        "return_pct": 207.7
+      }
+    ],
+    "hits": 2
+  },
+  {
+    "phase": "📈 Bull #3",
+    "bottom_date": "2012-12-03",
+    "end_date": "2015-06-12",
+    "top3_pred": [
+      {
+        "name": "家用电器",
+        "score": 5
+      },
+      {
+        "name": "轻工制造",
+        "score": 5
+      },
+      {
+        "name": "房地产",
+        "score": 5
+      }
+    ],
+    "top3_actual": [
+      {
+        "name": "轻工制造",
+        "return_pct": 384.0
+      },
+      {
+        "name": "电子",
+        "return_pct": 376.9
+      },
+      {
+        "name": "纺织服装",
+        "return_pct": 340.7
+      }
+    ],
+    "hits": 1
+  },
+  {
+    "phase": "📈 Bull #4",
+    "bottom_date": "2016-01-28",
+    "end_date": "2016-11-28",
+    "top3_pred": [
+      {
+        "name": "农林牧渔",
+        "score": 6
+      },
+      {
+        "name": "有色金属",
+        "score": 6
+      },
+      {
+        "name": "化工",
+        "score": 5
+      }
+    ],
+    "top3_actual": [
+      {
+        "name": "建筑装饰",
+        "return_pct": 50.9
+      },
+      {
+        "name": "有色金属",
+        "return_pct": 49.9
+      },
+      {
+        "name": "建筑材料",
+        "return_pct": 47.2
+      }
+    ],
+    "hits": 1
+  },
+  {
+    "phase": "📈 Bull #5",
+    "bottom_date": "2018-10-18",
+    "end_date": "2021-12-13",
+    "top3_pred": [
+      {
+        "name": "煤炭",
+        "score": 7
+      },
+      {
+        "name": "农林牧渔",
+        "score": 5
+      },
+      {
+        "name": "房地产",
+        "score": 5
+      }
+    ],
+    "top3_actual": [
+      {
+        "name": "电力设备",
+        "return_pct": 320.3
+      },
+      {
+        "name": "食品饮料",
+        "return_pct": 198.6
+      },
+      {
+        "name": "电子",
+        "return_pct": 183.4
+      }
+    ],
+    "hits": 0
+  },
+  {
+    "phase": "📈 Bull #6",
+    "bottom_date": "2024-02-05",
+    "end_date": "2024-11-11",
+    "top3_pred": [
+      {
+        "name": "电子",
+        "score": 6
+      },
+      {
+        "name": "公用事业",
+        "score": 6
+      },
+      {
+        "name": "电力设备",
+        "score": 5
+      }
+    ],
+    "top3_actual": [
+      {
+        "name": "电子",
+        "return_pct": 82.9
+      },
+      {
+        "name": "计算机",
+        "return_pct": 76.2
+      },
+      {
+        "name": "国防军工",
+        "return_pct": 71.3
+      }
+    ],
+    "hits": 1
+  },
+  {
+    "phase": "📈 Bull #7",
+    "bottom_date": "2025-04-07",
+    "end_date": "2026-05-21",
+    "top3_pred": [
+      {
+        "name": "家用电器",
+        "score": 5
+      },
+      {
+        "name": "食品饮料",
+        "score": 5
+      },
+      {
+        "name": "通信",
+        "score": 5
+      }
+    ],
+    "top3_actual": [],
+    "hits": 0
+  }
+]

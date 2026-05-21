@@ -37,7 +37,7 @@ docs:
 scripts:
   calculate_factors:
     cmd: "python3 -m backend.research.features.calculator"
-    desc: "计算所有Tier1+Tier2因子，写入market_daily_data"
+    desc: "计算所有因子，写入market_daily_data"
     output: "数据库直写"
   
   sector_leadership_analysis:
@@ -62,7 +62,7 @@ scripts:
   stock_pilot:
     cmd: "python3 backend/collectors/stock_pilot.py"
     desc: "3行业个股数据pilot验证（电子/食品饮料/银行）"
-    status: "脚本就绪，需在台式机执行（当前环境无外网）"
+    status: "脚本就绪"
     note: "pilot通过后写全量脚本 + breadth计算"
 ```
 
@@ -78,13 +78,15 @@ design_decisions:
     why: "不同行业交易日历不同（历史上有15→27→30个），pivot对齐导致窗口偏移。循环版用各行业独立dropna()定位窗口，结果准确"
     ref: "test: backend/research/analysis/test_vector_vs_loop.py (匹配率仅34.7%)"
   
-  - rule: "涨跌停标记使用 baostock pctChg 字段"
-    why: "baostock 的 pctChg 始终返回原始涨跌幅，不受 adjustflag 影响"
+  - rule: "复权口径统一规范"
+    why: "不同场景需要不同复权口径，详见 docs/database_schema.md"
     price_convention:
-      涨跌停/当日涨跌幅限制判定: "baostock pctChg 字段 (>= 9.8%)"
-      收益回测/净值/RS/Momentum: "后复权 close"
-      人工看盘/K线展示: "前复权"
+      涨跌停/当日涨跌幅限制判定: "pct_chg_raw 字段（baostock pctChg，>=9.8%），未复权不受影响"
+      收益回测/净值/RS/Momentum: "close_hfq 字段（后复权 close）"
+      人工看盘/K线展示: "未复权 OHLC × qfq_factor（动态计算，锚定最新价）"
+      技术指标（ATR/布林/唐奇安）: "未复权 high/low × hfq_factor（后复权，避免除权假突破）"
       成交额/成交量: "原始值，不复权"
+      数据库 close 字段: "未复权（原始收盘价），后复权在 close_hfq"
   
   - rule: "不使用未来数据验证"
     why: "评分点只用到当日可用的累计数据"
@@ -96,10 +98,15 @@ design_decisions:
   - rule: "符号编码 {asset_type}.{ticker}.{exchange}"
     example: "index.000985.SH, sector.801780.SW"
 
-  - rule: "个股数据源使用 baostock，不使用东方财富/akshare"
-    why: "东方财富IP封禁严重。baostock adjustflag=1单次调用即可拿到后复权close + pctChg"
-    ref: "baostock pctChg 字段不受复权影响"
-    note: "~5%次新股解压错误跳过即可，不影响breadth统计"
+  - rule: "个股数据源：baostock 双趟 + 新浪补缺"
+    why: "baostock 双趟（未复权+后复权）获取完整 price 数据，新浪补 baostock 缺失的 ~5%"
+    ref: "backend/collectors/stock_pilot.py"
+    note: |
+      baostock 双趟方案：
+        pass 1 (adjustflag=1): close → close_hfq（后复权，回测用）
+        pass 2 (adjustflag=3): OHLC + pctChg → 未复权 close/open/high/low + pct_chg_raw
+      pctChg 字段始终是原始涨跌幅，不受 adjustflag 影响
+      新浪补缺时顺带拉 hfq-factor（后复权因子）
   
   - rule: "因子通过Feature Registry注册，不散落各处"
     ref: "backend/research/features/registry.py"
@@ -137,7 +144,7 @@ experiments:
 factor_coverage:
   rs20/rs60/mom20/mom60/breakout:        "90%+ ✅"
   industry_diffusion:                     "87% ✅"
-  adv_decline_ratio:                      "99.7% ✅ （Tier2 bug修复后）"
+  adv_decline_ratio:                      "99.7% ✅ （横截面聚合bug修复后）"
   market_volatility_20d:                  "99.7% ✅"
   small_cap_spread:                       "50% ⚠️ 中证2000数据限制"
   pe_percentile:                          "22% ⚠️ 仅指数有PE"

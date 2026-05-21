@@ -32,9 +32,11 @@ class MarketDailyData:
     open: Optional[float] = None
     high: Optional[float] = None
     low: Optional[float] = None
-    close: Optional[float] = None
-    volume: Optional[float] = None   # 成交量(手)
-    amount: Optional[float] = None   # 成交额(元)
+    close: Optional[float] = None        # 未复权收盘价（原始值）
+    close_hfq: Optional[float] = None    # 后复权收盘价（回测/因子计算用）
+    hfq_factor: Optional[float] = None   # 后复权因子 = close_hfq / close
+    volume: Optional[float] = None       # 成交量(手)
+    amount: Optional[float] = None       # 成交额(元)
     turnover_rate: Optional[float] = None
 
     # 估值
@@ -76,6 +78,7 @@ class MarketDailyData:
 
     # 未复权数据（涨跌停判定用）
     pct_chg_raw: Optional[float] = None    # 原始涨跌幅
+    preclose_raw: Optional[float] = None   # 原始昨收（未复权）
 
     # Layer 3: Breadth 指标（行业行）
     above_ma20_ratio: Optional[float] = None

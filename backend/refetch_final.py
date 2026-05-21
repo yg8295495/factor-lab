@@ -1,6 +1,11 @@
 """
-最终版补采脚本 — Playwright + chromium-1200
-先访问东财主站拿Cookie，再逐个拉取所有资产的数据
+[已弃用] 最终版补采脚本 — Playwright + chromium-1200
+
+⚠️ 此脚本使用东财接口 fqt=1（前复权），与当前 DB close 字段（未复权）口径不一致。
+⚠️ 东财 push2his.eastmoney.com 在本网络永久不通。
+
+如需复用，必须改造为双趟写入（未复权 close + 后复权 close_hfq），
+或仅用此脚本拉取数据后自行转换。
 """
 
 import sqlite3, os, time, json

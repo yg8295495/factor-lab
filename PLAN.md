@@ -29,15 +29,17 @@ Phase 4 ─ 标注系统 + 回测 + qlib ─────────────
 | 模块 | 状态 | 说明 |
 |------|:----:|------|
 | 数据库 (6表, 23万行) | ✅ | 55资产，schema已冻结 |
+| 数据库字段文档 | ✅ | `docs/database_schema.md` 已创建，包含完整字段定义+复权口径 |
 | Feature Registry (17因子) | ✅ | 见 `registry.py` |
 | regsitry.py CSI→SH 修正 | ✅ | benchmark符号统一 |
 | 向量化入口隔离 | ✅ | --daily 已拦截 |
 | 涨跌停口径 | ✅ | baostock pctChg 字段 |
 | market_daily_data 新字段 | ✅ | 新增10列（breadth+情绪） |
-| models.py 更新 | ✅ | 新增字段映射 |
-| 个股 Pilot 脚本 | ✅ | baostock，待台式机执行 |
-| Tier2 Bug 修复 | ✅ | adv_decline_ratio + volatility 18%→99.7% |
+| models.py 更新 | ✅ | 新增 close_hfq/hfq_factor/preclose_raw（复权口径统一） |
+| 个股 Pilot 脚本（双趟） | ✅ | baostock 双趟（未复权+后复权）+ 新浪补缺 |
+| 横截面聚合Bug修复 | ✅ | adv_decline_ratio + volatility 覆盖 18%→99.7% |
 | 行为评分 v2 v0.1 | ✅ | 滚动回测 +60.5%超额/53.1%胜率 |
+| 废弃代码清理 | ✅ | sector_strength_score.py 删除；refetch 系列标注 [已弃用] |
 | 结构因子构建 | 📝 | 待pilot通过后开始 |
 | Layer 3 State Machine | 📝 | 下一阶段 |
 
@@ -60,10 +62,12 @@ Phase 4 ─ 标注系统 + 回测 + qlib ─────────────
 
 ## 下一步任务
 
-### [P0] 个股数据 Pilot → 全量采集
-1. 台式机执行 `python3 backend/collectors/stock_pilot.py`（电子/食品饮料/银行）
-2. 验证通过后写全量采集脚本
-3. 一次性计算：全市场情绪指标 + 30行业 breadth
+### [P0] 个股数据 Pilot 验证 → 全量采集
+1. 笔记本执行 `python3 backend/collectors/stock_pilot.py`（电子/食品饮料/银行）双趟 baostock
+2. 验证 hfq_factor 复算精度（误差 < 0.02 即通过）
+3. 通过后写全量采集脚本
+4. 一次性计算：全市场情绪指标 + 30行业 breadth
+5. 新浪补缺：baostock 缺失的 ~5% 个股，顺带拉 hfq-factor
 
 ### [P1] Layer 3 结构因子构建
 - RS 加速度（delta RS）
@@ -89,3 +93,8 @@ Phase 4 ─ 标注系统 + 回测 + qlib ─────────────
 4. **符号编码** — `{asset_type}.{ticker}.{exchange}`
 5. **Factor Registry** — 所有因子通过 registry.py 注册
 6. **先人工标注 → 再结构识别 → 不上 ML**
+7. **复权口径统一规范** — close=未复权, close_hfq=后复权, 前复权由 hfq_factor 动态推导
+   - 涨跌停判定 → pct_chg_raw
+   - 收益回测/RS/Momentum → close_hfq
+   - 人工看盘/K线 → 未复权 OHLC × qfq_factor
+   - 详见 `docs/database_schema.md`

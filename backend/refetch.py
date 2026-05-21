@@ -1,6 +1,11 @@
 """
-从 push2his.eastmoney.com API 重新拉取所有资产的完整日线数据
-覆盖 market_daily_data 中的旧数据
+[已弃用] 从 push2his.eastmoney.com API 拉取日线数据
+
+⚠️ 此脚本使用东财接口 fqt=1（前复权），与当前 DB close 字段（未复权）口径不一致。
+⚠️ 东财 push2his.eastmoney.com 在本网络永久不通。
+
+如需复用，必须改造为双趟写入（未复权 close + 后复权 close_hfq），
+或仅用此脚本拉取数据后自行转换。
 """
 
 import sqlite3

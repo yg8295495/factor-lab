@@ -23,6 +23,8 @@
 - **牛市主线在底部时超跌最深、RS 最烂**，单点评分永远选不到它
 - 公式无法区分"防御性跑赢"和"攻击性领涨"
 
+> 对应源代码 `backend/research/analysis/sector_strength_score.py` 已删除（2026-05 清理），实验结果留此作为反面参考。
+
 ---
 
 ## 二、v2：转折期行为评分（当前方案）
@@ -184,10 +186,15 @@
 
 | 数据 | 来源 | 说明 |
 |:----|:----|:------|
-| 个股日线 | baostock `adjustflag=1` | 后复权 close + pctChg, ~5%次新股跳过 |
+| 个股日线（未复权） | baostock `adjustflag=3` | 未复权 OHLC + pctChg |
+| 个股日线（后复权） | baostock `adjustflag=1` | 仅拉 close → `close_hfq` |
+| 复权因子 | 计算得到 | `hfq_factor = close_hfq / close` |
 | 涨跌停判定 | baostock `pctChg` | 不受复权影响，>=9.8%为涨停 |
 | 行业成分股 | akshare `index_stock_cons` | 申万30行业，共5186支 |
+| 补缺 | 新浪 `stock_zh_a_daily` | baostock 缺失的 ~5% |
 | 绝对不做 | 东方财富/akshare stock_zh_a_hist | IP封禁，不可靠 |
+
+> 完整规范见 `docs/database_schema.md`。
 
 ### 6.3 Pilot 验证
 

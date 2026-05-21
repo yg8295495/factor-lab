@@ -1,0 +1,1267 @@
+[
+  {
+    "phase_name": "bull #1",
+    "start": "2005-07-18",
+    "end": "2008-01-14",
+    "type": "bull",
+    "notes": "大牛市（用户注：2006-03前底部→主升→2007-06后高位分歧做顶双顶结构）",
+    "bm_return_pct": 619.0,
+    "sectors_count": 15,
+    "top3": [
+      {
+        "name": "有色金属",
+        "return_pct": 1135.1,
+        "excess_pct": 516.1,
+        "category": "周期"
+      },
+      {
+        "name": "房地产",
+        "return_pct": 877.3,
+        "excess_pct": 258.3,
+        "category": "周期"
+      },
+      {
+        "name": "商贸零售",
+        "return_pct": 741.9,
+        "excess_pct": 122.9,
+        "category": "消费"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "交通运输",
+        "return_pct": 375.0,
+        "excess_pct": -244.0,
+        "category": "防御"
+      },
+      {
+        "name": "公用事业",
+        "return_pct": 359.6,
+        "excess_pct": -259.4,
+        "category": "防御"
+      },
+      {
+        "name": "电子",
+        "return_pct": 323.5,
+        "excess_pct": -295.5,
+        "category": "成长"
+      }
+    ],
+    "top5_types": {
+      "周期": 3,
+      "消费": 2
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2005-07-18~2006-05-17",
+        "top3_names": [
+          "有色金属",
+          "食品饮料",
+          "商贸零售"
+        ],
+        "top3_returns": [
+          187.5,
+          91.2,
+          86.8
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2006-05-17~2007-03-16",
+        "top3_names": [
+          "房地产",
+          "钢铁",
+          "商贸零售"
+        ],
+        "top3_returns": [
+          134.3,
+          118.6,
+          114.4
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2007-03-16~2008-01-14",
+        "top3_names": [
+          "有色金属",
+          "房地产",
+          "钢铁"
+        ],
+        "top3_returns": [
+          163.7,
+          138.9,
+          128.9
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bear #2",
+    "start": "2008-01-14",
+    "end": "2008-11-04",
+    "type": "bear",
+    "notes": "金融危机暴跌（用户注：完整下跌波段）",
+    "bm_return_pct": -71.5,
+    "sectors_count": 15,
+    "top3": [
+      {
+        "name": "医药生物",
+        "return_pct": -58.4,
+        "excess_pct": 13.1,
+        "category": "消费"
+      },
+      {
+        "name": "公用事业",
+        "return_pct": -62.3,
+        "excess_pct": 9.2,
+        "category": "防御"
+      },
+      {
+        "name": "农林牧渔",
+        "return_pct": -63.3,
+        "excess_pct": 8.1,
+        "category": "消费"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "钢铁",
+        "return_pct": -75.9,
+        "excess_pct": -4.4,
+        "category": "防御"
+      },
+      {
+        "name": "社会服务",
+        "return_pct": -77.5,
+        "excess_pct": -6.1,
+        "category": "消费"
+      },
+      {
+        "name": "有色金属",
+        "return_pct": -83.4,
+        "excess_pct": -11.9,
+        "category": "周期"
+      }
+    ],
+    "top5_types": {
+      "消费": 4,
+      "防御": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2008-01-14~2008-04-21",
+        "top3_names": [
+          "农林牧渔",
+          "家用电器",
+          "食品饮料"
+        ],
+        "top3_returns": [
+          -22.4,
+          -34.7,
+          -34.7
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2008-04-21~2008-07-28",
+        "top3_names": [
+          "医药生物",
+          "化工",
+          "农林牧渔"
+        ],
+        "top3_returns": [
+          7.8,
+          3.4,
+          2.1
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2008-07-28~2008-11-04",
+        "top3_names": [
+          "公用事业",
+          "医药生物",
+          "家用电器"
+        ],
+        "top3_returns": [
+          -33.6,
+          -40.5,
+          -42.2
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bull #3",
+    "start": "2008-11-04",
+    "end": "2009-11-23",
+    "type": "bull",
+    "notes": "四万亿刺激反弹（用户注：09年8-11月周线顶背离）",
+    "bm_return_pct": 146.7,
+    "sectors_count": 15,
+    "top3": [
+      {
+        "name": "有色金属",
+        "return_pct": 267.7,
+        "excess_pct": 121.0,
+        "category": "周期"
+      },
+      {
+        "name": "社会服务",
+        "return_pct": 208.7,
+        "excess_pct": 61.9,
+        "category": "消费"
+      },
+      {
+        "name": "电子",
+        "return_pct": 207.7,
+        "excess_pct": 61.0,
+        "category": "成长"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "钢铁",
+        "return_pct": 102.7,
+        "excess_pct": -44.0,
+        "category": "防御"
+      },
+      {
+        "name": "交通运输",
+        "return_pct": 91.0,
+        "excess_pct": -55.7,
+        "category": "防御"
+      },
+      {
+        "name": "公用事业",
+        "return_pct": 83.9,
+        "excess_pct": -62.9,
+        "category": "防御"
+      }
+    ],
+    "top5_types": {
+      "周期": 2,
+      "消费": 2,
+      "成长": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2008-11-04~2009-03-12",
+        "top3_names": [
+          "有色金属",
+          "社会服务",
+          "电子"
+        ],
+        "top3_returns": [
+          87.2,
+          73.2,
+          68.9
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2009-03-12~2009-07-18",
+        "top3_names": [
+          "房地产",
+          "有色金属",
+          "钢铁"
+        ],
+        "top3_returns": [
+          84.2,
+          75.4,
+          63.1
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2009-07-18~2009-11-23",
+        "top3_names": [
+          "医药生物",
+          "家用电器",
+          "电子"
+        ],
+        "top3_returns": [
+          34.2,
+          29.2,
+          22.3
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bear #4",
+    "start": "2009-11-23",
+    "end": "2012-12-03",
+    "type": "bear",
+    "notes": "漫长熊市（用户注：对称性+大均线支撑判断）",
+    "bm_return_pct": -40.7,
+    "sectors_count": 15,
+    "top3": [
+      {
+        "name": "食品饮料",
+        "return_pct": -3.5,
+        "excess_pct": 37.2,
+        "category": "消费"
+      },
+      {
+        "name": "医药生物",
+        "return_pct": -17.0,
+        "excess_pct": 23.7,
+        "category": "消费"
+      },
+      {
+        "name": "家用电器",
+        "return_pct": -19.4,
+        "excess_pct": 21.3,
+        "category": "消费"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "交通运输",
+        "return_pct": -51.0,
+        "excess_pct": -10.3,
+        "category": "防御"
+      },
+      {
+        "name": "化工",
+        "return_pct": -52.3,
+        "excess_pct": -11.6,
+        "category": "周期"
+      },
+      {
+        "name": "钢铁",
+        "return_pct": -54.0,
+        "excess_pct": -13.3,
+        "category": "防御"
+      }
+    ],
+    "top5_types": {
+      "消费": 4,
+      "成长": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2009-11-23~2010-11-26",
+        "top3_names": [
+          "电子",
+          "医药生物",
+          "食品饮料"
+        ],
+        "top3_returns": [
+          45.2,
+          36.1,
+          34.9
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2010-11-26~2011-11-30",
+        "top3_names": [
+          "食品饮料",
+          "纺织服装",
+          "公用事业"
+        ],
+        "top3_returns": [
+          -3.9,
+          -17.3,
+          -18.3
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2011-11-30~2012-12-03",
+        "top3_names": [
+          "房地产",
+          "家用电器",
+          "医药生物"
+        ],
+        "top3_returns": [
+          2.7,
+          -3.1,
+          -17.1
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bull #5",
+    "start": "2012-12-03",
+    "end": "2015-06-12",
+    "type": "bull",
+    "notes": "创业板牛→全面牛市（用户注：中证全指2014-08前震荡磨底）",
+    "bm_return_pct": 246.6,
+    "sectors_count": 27,
+    "top3": [
+      {
+        "name": "轻工制造",
+        "return_pct": 384.0,
+        "excess_pct": 137.4,
+        "category": "消费"
+      },
+      {
+        "name": "电子",
+        "return_pct": 376.9,
+        "excess_pct": 130.3,
+        "category": "成长"
+      },
+      {
+        "name": "纺织服装",
+        "return_pct": 340.7,
+        "excess_pct": 94.1,
+        "category": "消费"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "有色金属",
+        "return_pct": 111.9,
+        "excess_pct": -134.6,
+        "category": "周期"
+      },
+      {
+        "name": "食品饮料",
+        "return_pct": 105.5,
+        "excess_pct": -141.1,
+        "category": "消费"
+      },
+      {
+        "name": "银行",
+        "return_pct": 97.2,
+        "excess_pct": -149.4,
+        "category": "防御"
+      }
+    ],
+    "top5_types": {
+      "消费": 4,
+      "成长": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2012-12-03~2013-10-06",
+        "top3_names": [
+          "电子",
+          "医药生物",
+          "商贸零售"
+        ],
+        "top3_returns": [
+          68.1,
+          57.9,
+          45.2
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2013-10-06~2014-08-09",
+        "top3_names": [
+          "家用电器",
+          "轻工制造",
+          "汽车"
+        ],
+        "top3_returns": [
+          15.6,
+          15.4,
+          15.3
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2014-08-09~2015-06-12",
+        "top3_names": [
+          "计算机",
+          "建筑装饰",
+          "煤炭"
+        ],
+        "top3_returns": [
+          254.4,
+          238.2,
+          227.3
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bear #6",
+    "start": "2015-06-12",
+    "end": "2016-01-28",
+    "type": "bear",
+    "notes": "股灾+熔断（用户注：B浪反弹到黄金分割0.618）",
+    "bm_return_pct": -49.7,
+    "sectors_count": 27,
+    "top3": [
+      {
+        "name": "银行",
+        "return_pct": -29.5,
+        "excess_pct": 20.2,
+        "category": "防御"
+      },
+      {
+        "name": "食品饮料",
+        "return_pct": -41.5,
+        "excess_pct": 8.2,
+        "category": "消费"
+      },
+      {
+        "name": "社会服务",
+        "return_pct": -42.6,
+        "excess_pct": 7.2,
+        "category": "消费"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "计算机",
+        "return_pct": -56.0,
+        "excess_pct": -6.3,
+        "category": "成长"
+      },
+      {
+        "name": "国防军工",
+        "return_pct": -58.3,
+        "excess_pct": -8.6,
+        "category": "成长"
+      },
+      {
+        "name": "钢铁",
+        "return_pct": -58.5,
+        "excess_pct": -8.7,
+        "category": "防御"
+      }
+    ],
+    "top5_types": {
+      "消费": 3,
+      "防御": 1,
+      "周期": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2015-06-12~2015-08-27",
+        "top3_names": [
+          "银行",
+          "食品饮料",
+          "交通运输"
+        ],
+        "top3_returns": [
+          -27.1,
+          -34.1,
+          -37.6
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2015-08-27~2015-11-12",
+        "top3_names": [
+          "计算机",
+          "非银金融",
+          "传媒"
+        ],
+        "top3_returns": [
+          42.7,
+          36.2,
+          32.4
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2015-11-12~2016-01-28",
+        "top3_names": [
+          "银行",
+          "家用电器",
+          "房地产"
+        ],
+        "top3_returns": [
+          -13.7,
+          -17.8,
+          -18.5
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bull #7",
+    "start": "2016-01-28",
+    "end": "2016-11-28",
+    "type": "bull",
+    "notes": "超跌反弹",
+    "bm_return_pct": 27.3,
+    "sectors_count": 27,
+    "top3": [
+      {
+        "name": "建筑装饰",
+        "return_pct": 50.9,
+        "excess_pct": 23.7,
+        "category": "周期"
+      },
+      {
+        "name": "有色金属",
+        "return_pct": 49.9,
+        "excess_pct": 22.7,
+        "category": "周期"
+      },
+      {
+        "name": "建筑材料",
+        "return_pct": 47.2,
+        "excess_pct": 19.9,
+        "category": "周期"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "交通运输",
+        "return_pct": 15.2,
+        "excess_pct": -12.1,
+        "category": "防御"
+      },
+      {
+        "name": "传媒",
+        "return_pct": 8.6,
+        "excess_pct": -18.6,
+        "category": "成长"
+      },
+      {
+        "name": "煤炭",
+        "return_pct": 4.1,
+        "excess_pct": -23.1,
+        "category": "防御"
+      }
+    ],
+    "top5_types": {
+      "周期": 3,
+      "消费": 2
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2016-01-28~2016-05-08",
+        "top3_names": [
+          "有色金属",
+          "食品饮料",
+          "汽车"
+        ],
+        "top3_returns": [
+          27.9,
+          20.7,
+          19.5
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2016-05-08~2016-08-18",
+        "top3_names": [
+          "国防军工",
+          "有色金属",
+          "通信"
+        ],
+        "top3_returns": [
+          19.7,
+          17.2,
+          15.9
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2016-08-18~2016-11-28",
+        "top3_names": [
+          "建筑装饰",
+          "建筑材料",
+          "家用电器"
+        ],
+        "top3_returns": [
+          22.9,
+          15.9,
+          13.6
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bear #8",
+    "start": "2016-11-28",
+    "end": "2018-10-18",
+    "type": "bear",
+    "notes": "慢熊（用户注：2018-06跌破箱体+240周线进入下跌周期）",
+    "bm_return_pct": -34.1,
+    "sectors_count": 27,
+    "top3": [
+      {
+        "name": "食品饮料",
+        "return_pct": 24.4,
+        "excess_pct": 58.5,
+        "category": "消费"
+      },
+      {
+        "name": "煤炭",
+        "return_pct": -2.1,
+        "excess_pct": 32.0,
+        "category": "防御"
+      },
+      {
+        "name": "银行",
+        "return_pct": -5.1,
+        "excess_pct": 29.0,
+        "category": "防御"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "轻工制造",
+        "return_pct": -50.8,
+        "excess_pct": -16.7,
+        "category": "消费"
+      },
+      {
+        "name": "纺织服装",
+        "return_pct": -55.1,
+        "excess_pct": -21.0,
+        "category": "消费"
+      },
+      {
+        "name": "传媒",
+        "return_pct": -60.2,
+        "excess_pct": -26.1,
+        "category": "成长"
+      }
+    ],
+    "top5_types": {
+      "防御": 3,
+      "消费": 2
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2016-11-28~2017-07-15",
+        "top3_names": [
+          "家用电器",
+          "食品饮料",
+          "钢铁"
+        ],
+        "top3_returns": [
+          16.9,
+          11.9,
+          8.1
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2017-07-15~2018-03-02",
+        "top3_names": [
+          "食品饮料",
+          "家用电器",
+          "钢铁"
+        ],
+        "top3_returns": [
+          35.7,
+          18.8,
+          16.9
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2018-03-02~2018-10-18",
+        "top3_names": [
+          "银行",
+          "食品饮料",
+          "非银金融"
+        ],
+        "top3_returns": [
+          -15.1,
+          -16.2,
+          -22.5
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bull #9",
+    "start": "2018-10-18",
+    "end": "2021-12-13",
+    "type": "bull",
+    "notes": "结构牛（用户注：2019-04~2020-06宽幅震荡/强势2浪调整；后段为抱团白马行情）",
+    "bm_return_pct": 79.6,
+    "sectors_count": 30,
+    "top3": [
+      {
+        "name": "电力设备",
+        "return_pct": 320.3,
+        "excess_pct": 240.8,
+        "category": "成长"
+      },
+      {
+        "name": "食品饮料",
+        "return_pct": 198.6,
+        "excess_pct": 119.0,
+        "category": "消费"
+      },
+      {
+        "name": "电子",
+        "return_pct": 183.4,
+        "excess_pct": 103.8,
+        "category": "成长"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "石油石化",
+        "return_pct": 0.0,
+        "excess_pct": -79.6,
+        "category": "防御"
+      },
+      {
+        "name": "环保",
+        "return_pct": 0.0,
+        "excess_pct": -79.6,
+        "category": "其他"
+      },
+      {
+        "name": "美容护理",
+        "return_pct": 0.0,
+        "excess_pct": -79.6,
+        "category": "消费"
+      }
+    ],
+    "top5_types": {
+      "成长": 2,
+      "消费": 2,
+      "周期": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2018-10-18~2019-11-06",
+        "top3_names": [
+          "农林牧渔",
+          "食品饮料",
+          "电子"
+        ],
+        "top3_returns": [
+          71.6,
+          61.9,
+          58.9
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2019-11-06~2020-11-24",
+        "top3_names": [
+          "电力设备",
+          "食品饮料",
+          "汽车"
+        ],
+        "top3_returns": [
+          80.7,
+          65.1,
+          62.9
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2020-11-24~2021-12-13",
+        "top3_names": [
+          "电力设备",
+          "有色金属",
+          "化工"
+        ],
+        "top3_returns": [
+          83.6,
+          55.2,
+          37.3
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bear #10",
+    "start": "2021-12-13",
+    "end": "2024-02-05",
+    "type": "bear",
+    "notes": "大熊市（用户注：ABC三浪下跌，A=2021-12→2022-04，B=→2023-02，C=→2024-02）",
+    "bm_return_pct": -39.3,
+    "sectors_count": 30,
+    "top3": [
+      {
+        "name": "煤炭",
+        "return_pct": 20.8,
+        "excess_pct": 60.1,
+        "category": "防御"
+      },
+      {
+        "name": "通信",
+        "return_pct": -13.1,
+        "excess_pct": 26.2,
+        "category": "成长"
+      },
+      {
+        "name": "银行",
+        "return_pct": -14.6,
+        "excess_pct": 24.8,
+        "category": "防御"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "建筑材料",
+        "return_pct": -50.5,
+        "excess_pct": -11.2,
+        "category": "周期"
+      },
+      {
+        "name": "电子",
+        "return_pct": -52.4,
+        "excess_pct": -13.0,
+        "category": "成长"
+      },
+      {
+        "name": "电力设备",
+        "return_pct": -59.7,
+        "excess_pct": -20.4,
+        "category": "成长"
+      }
+    ],
+    "top5_types": {
+      "防御": 4,
+      "成长": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2021-12-13~2022-08-31",
+        "top3_names": [
+          "煤炭",
+          "农林牧渔",
+          "交通运输"
+        ],
+        "top3_returns": [
+          29.5,
+          3.8,
+          -2.9
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2022-08-31~2023-05-19",
+        "top3_names": [
+          "传媒",
+          "计算机",
+          "通信"
+        ],
+        "top3_returns": [
+          37.1,
+          29.3,
+          21.1
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2023-05-19~2024-02-05",
+        "top3_names": [
+          "煤炭",
+          "银行",
+          "家用电器"
+        ],
+        "top3_returns": [
+          6.1,
+          -4.8,
+          -5.7
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bull #11",
+    "start": "2024-02-05",
+    "end": "2024-11-11",
+    "type": "bull",
+    "notes": "W底强力反弹（用户注：股债利差+PE百分位底部信号；9-24爆发，国庆超买）",
+    "bm_return_pct": 39.6,
+    "sectors_count": 30,
+    "top3": [
+      {
+        "name": "电子",
+        "return_pct": 82.9,
+        "excess_pct": 43.3,
+        "category": "成长"
+      },
+      {
+        "name": "计算机",
+        "return_pct": 76.2,
+        "excess_pct": 36.6,
+        "category": "成长"
+      },
+      {
+        "name": "国防军工",
+        "return_pct": 71.3,
+        "excess_pct": 31.7,
+        "category": "成长"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "纺织服装",
+        "return_pct": 11.8,
+        "excess_pct": -27.8,
+        "category": "消费"
+      },
+      {
+        "name": "食品饮料",
+        "return_pct": 8.4,
+        "excess_pct": -31.2,
+        "category": "消费"
+      },
+      {
+        "name": "煤炭",
+        "return_pct": 0.6,
+        "excess_pct": -39.0,
+        "category": "防御"
+      }
+    ],
+    "top5_types": {
+      "成长": 4,
+      "其他": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2024-02-05~2024-05-08",
+        "top3_names": [
+          "有色金属",
+          "化工",
+          "汽车"
+        ],
+        "top3_returns": [
+          36.5,
+          33.1,
+          31.2
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2024-05-08~2024-08-09",
+        "top3_names": [
+          "公用事业",
+          "银行",
+          "电子"
+        ],
+        "top3_returns": [
+          0.5,
+          -1.8,
+          -3.0
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2024-08-09~2024-11-11",
+        "top3_names": [
+          "计算机",
+          "非银金融",
+          "电子"
+        ],
+        "top3_returns": [
+          73.4,
+          59.3,
+          51.0
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bear #12",
+    "start": "2024-11-11",
+    "end": "2025-04-07",
+    "type": "bear",
+    "notes": "2浪回调（用户注：国庆后超买回落，磨底半年）",
+    "bm_return_pct": -14.7,
+    "sectors_count": 30,
+    "top3": [
+      {
+        "name": "银行",
+        "return_pct": 4.5,
+        "excess_pct": 19.2,
+        "category": "防御"
+      },
+      {
+        "name": "纺织服装",
+        "return_pct": -7.1,
+        "excess_pct": 7.6,
+        "category": "消费"
+      },
+      {
+        "name": "汽车",
+        "return_pct": -7.7,
+        "excess_pct": 7.0,
+        "category": "周期"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "电力设备",
+        "return_pct": -23.9,
+        "excess_pct": -9.1,
+        "category": "成长"
+      },
+      {
+        "name": "非银金融",
+        "return_pct": -23.9,
+        "excess_pct": -9.1,
+        "category": "其他"
+      },
+      {
+        "name": "房地产",
+        "return_pct": -26.4,
+        "excess_pct": -11.7,
+        "category": "周期"
+      }
+    ],
+    "top5_types": {
+      "防御": 2,
+      "消费": 2,
+      "周期": 1
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2024-11-11~2024-12-30",
+        "top3_names": [
+          "银行",
+          "商贸零售",
+          "纺织服装"
+        ],
+        "top3_returns": [
+          8.0,
+          5.9,
+          2.3
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2024-12-30~2025-02-17",
+        "top3_names": [
+          "计算机",
+          "传媒",
+          "汽车"
+        ],
+        "top3_returns": [
+          15.6,
+          12.2,
+          7.3
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2025-02-17~2025-04-07",
+        "top3_names": [
+          "农林牧渔",
+          "食品饮料",
+          "银行"
+        ],
+        "top3_returns": [
+          0.7,
+          0.3,
+          -2.7
+        ]
+      }
+    ]
+  },
+  {
+    "phase_name": "bull #13",
+    "start": "2025-04-07",
+    "end": "2026-05-21",
+    "type": "bull",
+    "notes": "3浪主升中（用户注：满仓但被洗出部分仓位）",
+    "bm_return_pct": 49.5,
+    "sectors_count": 30,
+    "top3": [
+      {
+        "name": "通信",
+        "return_pct": 220.8,
+        "excess_pct": 171.3,
+        "category": "成长"
+      },
+      {
+        "name": "电子",
+        "return_pct": 135.2,
+        "excess_pct": 85.7,
+        "category": "成长"
+      },
+      {
+        "name": "有色金属",
+        "return_pct": 106.5,
+        "excess_pct": 57.0,
+        "category": "周期"
+      }
+    ],
+    "bottom3": [
+      {
+        "name": "银行",
+        "return_pct": 2.2,
+        "excess_pct": -47.3,
+        "category": "防御"
+      },
+      {
+        "name": "美容护理",
+        "return_pct": -7.1,
+        "excess_pct": -56.6,
+        "category": "消费"
+      },
+      {
+        "name": "食品饮料",
+        "return_pct": -13.3,
+        "excess_pct": -62.8,
+        "category": "消费"
+      }
+    ],
+    "top5_types": {
+      "成长": 3,
+      "周期": 2
+    },
+    "sub_stages": [
+      {
+        "stage": "早期",
+        "period": "2025-04-07~2025-08-21",
+        "top3_names": [
+          "通信",
+          "国防军工",
+          "电子"
+        ],
+        "top3_returns": [
+          62.3,
+          38.7,
+          38.5
+        ]
+      },
+      {
+        "stage": "中期",
+        "period": "2025-08-21~2026-01-04",
+        "top3_names": [
+          "有色金属",
+          "通信",
+          "电力设备"
+        ],
+        "top3_returns": [
+          41.8,
+          32.3,
+          26.5
+        ]
+      },
+      {
+        "stage": "末期",
+        "period": "2026-01-04~2026-05-21",
+        "top3_names": [
+          "通信",
+          "电子",
+          "建筑材料"
+        ],
+        "top3_returns": [
+          47.4,
+          37.5,
+          18.9
+        ]
+      }
+    ]
+  }
+]

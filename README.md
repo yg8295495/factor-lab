@@ -115,7 +115,7 @@ factor-lab/
 | `ai_analysis_reports` | AI 分析报告 |
 | `ai_memory` | AI 长期经验库 |
 
-详见 `docs/spec.md`（数据库结构规范）。
+详见 `docs/database_schema.md`（数据库结构规范）。
 
 ### 符号编码规范
 
@@ -234,6 +234,36 @@ python -m backend.research.features.calculator
 # 5. 前端（后续）
 cd frontend && npm install && npm run dev
 ```
+
+---
+
+## 因子中文对照表
+
+全量因子见 `backend/research/features/registry.py`。以下是当前激活的因子：
+
+| 英文标识符 | 中文名 | 维度 | 说明 |
+|:----------|:-------|:----:|:------|
+| RS20 | 20日相对强度 | rs | 标的 vs 基准的20日相对强弱 |
+| RS60 | 60日相对强度 | rs | 同上，60日窗口 |
+| RS_SLOPE | RS斜率 | rs | RS20的线性回归斜率，趋势加速/衰减 |
+| MOM20 | 20日时序动量 | context | 自身20日涨跌幅 |
+| MOM60 | 60日时序动量 | context | 自身60日涨跌幅 |
+| TREND_STR | 趋势综合评分 | context | RS+MOM+斜率综合 0~100 |
+| BREAKOUT | 突破强度 | context | 收盘价偏离MA20的幅度 |
+| PE_PERCENTILE | PE历史百分位 | context | PE在历史250日的位置 |
+| PE_CHANGE_RATE | PE扩张速度 | context | PE_TTM的20日变化率 |
+| ADV_DECLINE_RATIO | 涨跌比 | breadth | 上涨/下跌行业数比 |
+| INDUSTRY_DIFFUSION | 行业扩散率 | breadth | RS20>50的行业占比 |
+| VOLATILITY_20D | 20日波动率 | volatility | 行业平均20日收益率std |
+| SMALL_CAP_SPREAD | 大小票剪刀差 | style | 中证2000 vs 沪深300的RS差 |
+| PRICE_VOL_DIVERGENCE | 量价背离 | context | 价格方向与成交量方向的背离 |
+
+**维度说明**：
+- **rs** — 相对强度（趋势方向与强弱）
+- **breadth** — 广度（趋势是否扩散，区分主升 vs 抱团）
+- **volatility** — 波动率（蓄势/释放，判定混沌）
+- **style** — 风格（大小盘资金偏好）
+- **context** — 辅助上下文
 
 ---
 
