@@ -74,6 +74,22 @@ class MarketDailyData:
     small_cap_score: Optional[float] = None
     institution_score: Optional[float] = None
 
+    # 未复权数据（涨跌停判定用）
+    pct_chg_raw: Optional[float] = None    # 原始涨跌幅
+
+    # Layer 3: Breadth 指标（行业行）
+    above_ma20_ratio: Optional[float] = None
+    above_ma60_ratio: Optional[float] = None
+    new_high_20d_ratio: Optional[float] = None
+    rs_positive_ratio: Optional[float] = None
+
+    # Layer 3: 市场情绪指标（全指行）
+    adv_count: Optional[int] = None
+    decl_count: Optional[int] = None
+    limit_up_count: Optional[int] = None
+    limit_down_count: Optional[int] = None
+    market_adv_ratio: Optional[float] = None
+
     # AI辅助
     ai_theme_tag: Optional[str] = None
     ai_sentiment_tag: Optional[str] = None

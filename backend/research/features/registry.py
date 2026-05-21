@@ -66,7 +66,7 @@ FEATURE_REGISTRY: Dict[str, FeatureDef] = {
         description='标的相对于基准指数（中证全指）的20日滚动相对强弱。'
                     '使用 rolling_mean_ratio 算法: 标的收盘/标的20日均值。',
         compute_fn='calc_rs',
-        params={'lookback': 20, 'method': 'rolling_mean_ratio', 'benchmark': 'index.000985.CSI'},
+        params={'lookback': 20, 'method': 'rolling_mean_ratio', 'benchmark': 'index.000985.SH'},
         dependencies=['close'],
         storage='rs20_cross',
         display={'color': '#ff6600', 'chart': 'line', 'y_axis': 'right'},
@@ -80,7 +80,7 @@ FEATURE_REGISTRY: Dict[str, FeatureDef] = {
         tier=1,
         description='标的相对于基准指数的60日滚动相对强弱。',
         compute_fn='calc_rs',
-        params={'lookback': 60, 'method': 'rolling_mean_ratio', 'benchmark': 'index.000985.CSI'},
+        params={'lookback': 60, 'method': 'rolling_mean_ratio', 'benchmark': 'index.000985.SH'},
         dependencies=['close'],
         storage='rs60_cross',
         display={'color': '#ff9933', 'chart': 'line', 'y_axis': 'right'},

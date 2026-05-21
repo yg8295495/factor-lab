@@ -1,135 +1,91 @@
 # factor-lab 开发计划
 
-> ⚠️ **新人必读**：本文件是 factor-lab 的"任务总纲"。新会话或上下文被压缩后，先读此文件 + README.md 恢复上下文。
+> ⚠️ **新人必读**：本文件是 factor-lab 的"任务总纲"。新会话后先读 `AGENT.md`(AI导航) + `README.md`(项目概述) + `PLAN.md`(本文件)。
+>
+> **核心方法**：所有回测必须用**滚动方式**（每 20 天重评分→调仓→跟踪超额），禁止静态命中率。详见记忆 `workflow_accuracy_first`。
+>
+> **评分引擎**：以 `sector_behavior_score.py` 的**循环版**为准。向量化版已被验证结果不一致（匹配率仅 34.7%），勿用。
 
 ---
 
 ## 全局里程碑
 
 ```
-Phase 1 ─ 骨架搭建 + 数据通道 ───────────────── 当前阶段
-  ├─ 目录结构 & README/PLAN           ✅ Done
-  ├─ 数据库导入 & 确认                  ⏳ 等待
-  ├─ database.py / models.py            📝 待做
-  ├─ 数据采集管道                        📝 待做
-  └─ Feature Registry 初版              📝 待做
-
-Phase 2 ─ 因子统计 + 可视化提取
-  ├─ statistics/ (percentile/zscore/IC)
-  ├─ 从现有项目提取 DualAxisChart → FactorChart
-  ├─ FactorSelector + ResearchPanel 前端
-  └─ 因子值 + 统计语义叠加显示
-
-Phase 3 ─ 标注系统 + 状态时间轴
-  ├─ labeling/ 加载 + labels CSV
-  ├─ Replay + 状态时间轴
-  ├─ 前端时间轴染色（主升/退潮背景色）
-  └─ 手动观察 + 积累结构认知
-
-Phase 4 ─ 结构研究 + qlib 对接
-  ├─ Structure Grammar 初版
-  ├─ qlib 因子导出 + 回测管道
-  ├─ IC 分析面板
-  └─ 实验管理系统
+Phase 1 ─ 骨架搭建 + 数据通道 ───────────────── 已完成
+Phase 2 ─ 因子计算 + 基础因子分析 ──────────── 基本完成
+Phase 3 ─ 市场结构研究（Layer 3）────────────── 当前阶段
+  ├─ 13阶段划分 + 行业轮动分析       ✅ Done
+  ├─ 行业强度评分 v1                 ✅ Done (已废弃，见实验文档)
+  ├─ 转折期行为评分 v2 v0.1          ✅ Done
+  ├─ 结构因子构建                     📝 待做
+  └─ 主线识别 → Layer 3 State Machine 📝 待做
+Phase 4 ─ 标注系统 + 回测 + qlib ───────────── 📝 待做
 ```
 
 ---
 
-## 当前任务（Phase 1）
-
-### 📌 已完成
-
-- [x] **目录骨架建立** — `backend/` (data/collectors/research/features/statistics/labeling/structures/replay/experiments) + `frontend/` + `data/`
-- [x] **`__init__.py` 填充** — 所有 Python 包的初始化文件
-- [x] **`config.py`** — 全局配置（DB路径、采集参数、因子默认值）
-- [x] **`requirements.txt`** — 依赖清单
-- [x] **`README.md`** — 项目总览（架构、目录、数据库、核心概念 + 核心哲学）
-- [x] **`PLAN.md`** — 本文件
-- [x] **数据库导入 & 确认** — `quant_engine.db` 已复制到 `data/`，6 张表结构完全匹配 spec ✅
-
-### ✅ 当前完成状态 (2026-05-20)
+## 当前完成状态
 
 | 模块 | 状态 | 说明 |
 |------|:----:|------|
-| 数据库 | ✅ 完成 | 55资产, 239,651行, 全部2026-05-19, 含PE_TTM |
-| 数据源调研 | ✅ 完成 | 3个统一入口: CSI/申万/腾讯+Daily |
-| ORM模型 | ✅ 完成 | database.py + models.py |
-| Feature Registry | ✅ 完成 | 17个因子, Four Dimensions |
-| 因子计算引擎 | ✅ 完成 | calculator.py (Tier1+Tier2), 已写入DB |
-| FactorChart | ✅ 完成 | 十字光标联动 · 成交额占比历史分位 · tooltip 主副图分层 |
-| FastAPI 服务 | ✅ 完成 | backend/server.py, port 8000 |
-| 数据采集清单 | ✅ 完成 | docs/data_collection_manifest.md |
-| 踩坑记录 | ✅ 完成 | docs/data_source_troubleshooting.md |
-| macOS 迁移 | ✅ 完成 | docs/macos_migration.md + start.sh 一键启动 |
-| Git 远程 | ✅ 完成 | Gitee + GitHub 双远程 |
-
-#### 📝 后续方向
-
-| 优先级 | 方向 | 说明 |
-|--------|------|------|
-| **P0** | 进入 Feature Research Sprint | 用 FactorChart 观察因子历史行为, 记录到 tracker.py |
-| **P1** | 市场状态标注 | 人工标注 → 手动 replay → 积累认知 |
-| **P2** | Layer 3 结构识别 | 组合因子 → 识别主升/退潮/混沌/抱团 |
-
-#### 因子清单（确认不变）
-
-| 维度 | Tier | 因子 | 来源 |
-|------|------|------|------|
-| RS | Tier 1 | RS20, RS60, RS_SLOPE | market_daily_data 直接计算 |
-| Breadth | Tier 2 | ADV_DECLINE_RATIO, INDUSTRY_DIFFUSION | 横截面聚合 |
-| Volatility | Tier 2 | VOLATILITY_20D | 横截面聚合 |
-| Style Spread | Tier 2 | SMALL_CAP_SPREAD | 横截面聚合 |
-| 辅助上下文 | Tier 1 | MOM20, MOM60, TREND_STR, PE_PERCENTILE, PB_PERCENTILE, DIV_YIELD, PRICE_VOL_DIVERGENCE, BREAKOUT | 计算/聚合 |
-| （预留） | Tier 3 | ETF_FLOW_STRENGTH, LEADER_RS, SEALING_RATE (pending) | 需新数据源 |
+| 数据库 (6表, 23万行) | ✅ | 55资产，schema已冻结 |
+| Feature Registry (17因子) | ✅ | 见 `registry.py` |
+| regsitry.py CSI→SH 修正 | ✅ | benchmark符号统一 |
+| 向量化入口隔离 | ✅ | --daily 已拦截 |
+| 涨跌停口径 | ✅ | baostock pctChg 字段 |
+| market_daily_data 新字段 | ✅ | 新增10列（breadth+情绪） |
+| models.py 更新 | ✅ | 新增字段映射 |
+| 个股 Pilot 脚本 | ✅ | baostock，待台式机执行 |
+| Tier2 Bug 修复 | ✅ | adv_decline_ratio + volatility 18%→99.7% |
+| 行为评分 v2 v0.1 | ✅ | 滚动回测 +60.5%超额/53.1%胜率 |
+| 结构因子构建 | 📝 | 待pilot通过后开始 |
+| Layer 3 State Machine | 📝 | 下一阶段 |
 
 ---
 
-## 重要设计决策（新会话必读）
+## 实验文档索引
 
-### 1. 根目录
+实验结论和详细回测数据已移出 PLAN.md，统一归入：
 
-本项目设计为独立根目录。新开 AI 会话时，将工作目录指向 `factor-lab/`，所有路径以此为基准。
+| 实验 | 文档 |
+|:----|:----|
+| 阶段划分 + 行业领航分析 | `docs/research/phase_sector_leadership_v1.md` |
+| 评分实验合集（v1结论+v2设计+v0.1回测+遗留问题） | `docs/research/behavior_scoring_v1.md` |
+| AI 工作导航 | `AGENT.md` |
+| 数据源状态 | `docs/data_source_report.md`, `data_collection_manifest.md` |
 
-### 2. 数据库
-
-- `data/quant_engine.db` — SQLite，6 张表，schema 已冻结（不改字段不改主键）
-- 符号编码：`{asset_type}.{ticker}.{exchange}`（如 `index.000300.CSI`）
-
-### 3. 项目来源
-
-- 前端 DualAxisChart 从现有投研系统项目提取并泛化
-- 提取原则：只搬核心渲染能力，不搬仪表盘/ETF/持仓等无关代码
-
-### 4. 外部系统
-
-- 数据源：akshare（主）/ baostock（备），东方财富系需 `trust_env=False` 绕过代理
-- 回测：后续对接 qlib / Alphalens
-
-### 5. 认知框架（核心哲学）
-
-- **市场状态 ≠ 趋势** — 趋势只是多维状态空间中的一个维度
-- **市场状态是横截面现象** — 单个资产的因子值无法判定市场状态
-- **Four Dimensions Focus** — Phase 1 只聚焦 RS / Breadth / Volatility / Style Spread 四个维度
-
-### 6. Feature Explosion 防控（硬规则）
-
-每增加一个 Feature，必须回答：
-1. 它测量什么？
-2. 它属于哪个状态维度？
-3. 它和已有 Feature 区别是什么？（正交性）
-4. 它是否真的增加新的信息？（必要性）
-
-> 宁缺毋滥。10 个正交的因子胜过 50 个冗余的因子。
-
-### 7. 工作方式
-
-- 先人工标注市场状态 → 手动 replay 观察 → 积累认知 → 再上自动结构识别
-- **不要一开始就上 ML**
-- 研究中必须记录观察笔记（`experiments/tracker.py`），否则等于没做
+实验输出 JSON 在 `backend/research/analysis/output/` 目录下。
 
 ---
 
-## 备注
+## 下一步任务
 
-- 文档 `docs/spec.md` 和 `docs/architecture.md` 的完整版在 AI-DMS 项目仓库中
-- 标注文件 `market_labels.csv` 在 `backend/research/labeling/labels/` 下
+### [P0] 个股数据 Pilot → 全量采集
+1. 台式机执行 `python3 backend/collectors/stock_pilot.py`（电子/食品饮料/银行）
+2. 验证通过后写全量采集脚本
+3. 一次性计算：全市场情绪指标 + 30行业 breadth
+
+### [P1] Layer 3 结构因子构建
+- RS 加速度（delta RS）
+- 波动率扩张因子
+- Breadth 聚合（sector_breadth）
+- 全在 `backend/research/structures/` 下开发
+
+### [P2] 行为评分 v2 改进 + 回测集成
+- 滚动回测加入 breadth 调整因子
+- A/B 对比：v0.1（纯行为） vs v0.2（行为 + breadth）
+
+### [P3] 文档收尾 + 笔记本迁移
+- 更新 PLAN.md / AGENT.md / behavior_scoring_v1.md
+- 笔记本可复现全套分析
+
+---
+
+## 设计决策速查
+
+1. **循环版 > 向量化版** — 各行业交易日历不同，pivot对齐导致窗口偏移
+2. **滚动回测 > 静态命中率** — 实战中主线分阶段轮换
+3. **schema 已冻结** — 不删不改现有主键，新因子只加字段
+4. **符号编码** — `{asset_type}.{ticker}.{exchange}`
+5. **Factor Registry** — 所有因子通过 registry.py 注册
+6. **先人工标注 → 再结构识别 → 不上 ML**

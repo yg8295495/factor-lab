@@ -254,28 +254,35 @@ def calc_tier1_factors(symbol, db):
 # ────────────────────────────────────────────
 
 def calc_adv_decline_ratio(db):
-    """涨跌比：申万30行业中上涨/下跌的比例"""
+    """
+    涨跌比：申万行业中上涨/下跌的比例。
+    
+    修复：改用逐行业加载（避免 pivot 新行业空数据整行丢弃的问题）。
+    """
     sw_symbols = _get_sw_symbols(db)
     if not sw_symbols:
         return
 
-    # 加载所有申万行业收盘价
-    all_close = load_all_assets(['close'])
-    if all_close.empty:
+    # 逐行业加载收盘数据 → DataFrame（自动按日对齐）
+    all_series = {}
+    for sym in sw_symbols:
+        df = load_asset_data(sym, fields=['close'])
+        if not df.empty:
+            all_series[sym] = df['close']
+
+    if not all_series:
         return
 
-    # 只保留申万行业
-    sw_close = all_close[[c for c in all_close.columns if c in sw_symbols]]
-    if sw_close.empty:
-        return
+    sw_close = pd.DataFrame(all_series)
 
-    # 每日涨跌方向
-    direction = sw_close.diff().dropna()
+    # 每日涨跌方向（只保留至少有一个行业有数据的日期）
+    direction = sw_close.diff()
 
-    # 计算涨跌比
+    # 逐日统计上涨/下跌数
     adv = (direction > 0).sum(axis=1)
     decl = (direction < 0).sum(axis=1)
-    ratio = adv / (adv + decl).replace(0, np.nan)
+    total_valid = adv + decl  # 实际有数据的行业数
+    ratio = adv / total_valid.replace(0, np.nan)
 
     _write_tier2_factor(db, 'ADV_DECLINE_RATIO', ratio)
 
@@ -304,22 +311,29 @@ def calc_industry_diffusion(db, threshold=50, lookback=20):
 
 
 def calc_market_volatility(db, lookback=20):
-    """市场波动率：申万行业平均收益率标准差"""
+    """
+    市场波动率：申万行业平均收益率标准差。
+    
+    修复：改用逐行业加载（避免 pivot 新行业空数据整行丢弃的问题）。
+    """
     sw_symbols = _get_sw_symbols(db)
-    all_close = load_all_assets(['close'])
-    if all_close.empty:
+    if not sw_symbols:
         return
 
-    sw_close = all_close[[c for c in all_close.columns if c in sw_symbols]]
-    if sw_close.empty:
+    # 逐行业加载
+    all_returns = {}
+    for sym in sw_symbols:
+        df = load_asset_data(sym, fields=['close'])
+        if not df.empty and len(df) > lookback:
+            ret = df['close'].pct_change(fill_method=None)
+            vol = ret.rolling(lookback).std() * np.sqrt(252) * 100
+            all_returns[sym] = vol
+
+    if not all_returns:
         return
 
-    # 日收益率
-    returns = sw_close.pct_change(fill_method=None).dropna()
-
-    # 每个行业的滚动波动率
-    vol = returns.rolling(lookback).std() * np.sqrt(252) * 100
-    market_vol = vol.mean(axis=1)
+    vol_df = pd.DataFrame(all_returns)
+    market_vol = vol_df.mean(axis=1)
 
     _write_tier2_factor(db, 'VOLATILITY_20D', market_vol)
 
