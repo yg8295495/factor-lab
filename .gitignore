@@ -18,3 +18,10 @@ Thumbs.db
 
 # 日志
 logs/
+
+# CodeBuddy
+.codebuddy/
+
+# 生成的分析输出
+backend/research/analysis/output/*.json
+backend/research/features/output/

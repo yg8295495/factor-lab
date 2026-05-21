@@ -78,7 +78,6 @@ class MarketDailyData:
 
     # 未复权数据（涨跌停判定用）
     pct_chg_raw: Optional[float] = None    # 原始涨跌幅
-    preclose_raw: Optional[float] = None   # 原始昨收（未复权）
 
     # Layer 3: Breadth 指标（行业行）
     above_ma20_ratio: Optional[float] = None

@@ -62,8 +62,7 @@
 | `volume` | REAL | 原始值，不复权 | 成交量（手） |
 | `amount` | REAL | 原始值，不复权 | 成交额（元） |
 | `turnover_rate` | REAL | — | 换手率 |
-| `pct_chg_raw` | REAL | **未复权** | **原始涨跌幅**，用于涨跌停判定。来源：baostock `pctChg` 字段（不受复权影响） |
-| `preclose_raw` | REAL | **未复权** | **原始昨收**（可选，可从未复权 close shift 得到） |
+| `pct_chg_raw` | REAL | **未复权** | **原始涨跌幅**，用于涨跌停判定。来源：未复权 close 自算 `(close[t] - close[t-1]) / close[t-1] * 100` |
 
 ### 3.3 后复权价格
 
@@ -250,4 +249,4 @@
 | 日期 | 变更 | 说明 |
 |:-----|:-----|:------|
 | 2026-05-20 | 初版 | schema 冻结后的完整字段说明 |
-| — | `close` 改为未复权 | 新增 `close_hfq` / `hfq_factor` / `preclose_raw`，统一复权口径 |
+| — | `close` 改为未复权 | 新增 `close_hfq` / `hfq_factor`，统一复权口径 |

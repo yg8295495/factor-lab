@@ -1,100 +1,12 @@
-# factor-lab 开发计划
+# PLAN.md — 进度 & 待办
 
-> ⚠️ **新人必读**：本文件是 factor-lab 的"任务总纲"。新会话后先读 `AGENT.md`(AI导航) + `README.md`(项目概述) + `PLAN.md`(本文件)。
->
-> **核心方法**：所有回测必须用**滚动方式**（每 20 天重评分→调仓→跟踪超额），禁止静态命中率。详见记忆 `workflow_accuracy_first`。
->
-> **评分引擎**：以 `sector_behavior_score.py` 的**循环版**为准。向量化版已被验证结果不一致（匹配率仅 34.7%），勿用。
+## 已完成
 
----
+- 全量 A 股数据采集：TickFlow 脚本编写中，后台运行
+- 数据验证：5 只个股 × 三种复权口径，100% 通过 ✅
+- 文档体系重组：AGENT.md → 精简导航 + 4 个 agent 文档
 
-## 全局里程碑
+## 待办
 
-```
-Phase 1 ─ 骨架搭建 + 数据通道 ───────────────── 已完成
-Phase 2 ─ 因子计算 + 基础因子分析 ──────────── 基本完成
-Phase 3 ─ 市场结构研究（Layer 3）────────────── 当前阶段
-  ├─ 13阶段划分 + 行业轮动分析       ✅ Done
-  ├─ 行业强度评分 v1                 ✅ Done (已废弃，见实验文档)
-  ├─ 转折期行为评分 v2 v0.1          ✅ Done
-  ├─ 结构因子构建                     📝 待做
-  └─ 主线识别 → Layer 3 State Machine 📝 待做
-Phase 4 ─ 标注系统 + 回测 + qlib ───────────── 📝 待做
-```
-
----
-
-## 当前完成状态
-
-| 模块 | 状态 | 说明 |
-|------|:----:|------|
-| 数据库 (6表, 23万行) | ✅ | 55资产，schema已冻结 |
-| 数据库字段文档 | ✅ | `docs/database_schema.md` 已创建，包含完整字段定义+复权口径 |
-| Feature Registry (17因子) | ✅ | 见 `registry.py` |
-| regsitry.py CSI→SH 修正 | ✅ | benchmark符号统一 |
-| 向量化入口隔离 | ✅ | --daily 已拦截 |
-| 涨跌停口径 | ✅ | baostock pctChg 字段 |
-| market_daily_data 新字段 | ✅ | 新增10列（breadth+情绪） |
-| models.py 更新 | ✅ | 新增 close_hfq/hfq_factor/preclose_raw（复权口径统一） |
-| 个股 Pilot 脚本（双趟） | ✅ | baostock 双趟（未复权+后复权）+ 新浪补缺 |
-| 横截面聚合Bug修复 | ✅ | adv_decline_ratio + volatility 覆盖 18%→99.7% |
-| 行为评分 v2 v0.1 | ✅ | 滚动回测 +60.5%超额/53.1%胜率 |
-| 废弃代码清理 | ✅ | sector_strength_score.py 删除；refetch 系列标注 [已弃用] |
-| 结构因子构建 | 📝 | 待pilot通过后开始 |
-| Layer 3 State Machine | 📝 | 下一阶段 |
-
----
-
-## 实验文档索引
-
-实验结论和详细回测数据已移出 PLAN.md，统一归入：
-
-| 实验 | 文档 |
-|:----|:----|
-| 阶段划分 + 行业领航分析 | `docs/research/phase_sector_leadership_v1.md` |
-| 评分实验合集（v1结论+v2设计+v0.1回测+遗留问题） | `docs/research/behavior_scoring_v1.md` |
-| AI 工作导航 | `AGENT.md` |
-| 数据源状态 | `docs/data_source_report.md`, `data_collection_manifest.md` |
-
-实验输出 JSON 在 `backend/research/analysis/output/` 目录下。
-
----
-
-## 下一步任务
-
-### [P0] 个股数据 Pilot 验证 → 全量采集
-1. 笔记本执行 `python3 backend/collectors/stock_pilot.py`（电子/食品饮料/银行）双趟 baostock
-2. 验证 hfq_factor 复算精度（误差 < 0.02 即通过）
-3. 通过后写全量采集脚本
-4. 一次性计算：全市场情绪指标 + 30行业 breadth
-5. 新浪补缺：baostock 缺失的 ~5% 个股，顺带拉 hfq-factor
-
-### [P1] Layer 3 结构因子构建
-- RS 加速度（delta RS）
-- 波动率扩张因子
-- Breadth 聚合（sector_breadth）
-- 全在 `backend/research/structures/` 下开发
-
-### [P2] 行为评分 v2 改进 + 回测集成
-- 滚动回测加入 breadth 调整因子
-- A/B 对比：v0.1（纯行为） vs v0.2（行为 + breadth）
-
-### [P3] 文档收尾 + 笔记本迁移
-- 更新 PLAN.md / AGENT.md / behavior_scoring_v1.md
-- 笔记本可复现全套分析
-
----
-
-## 设计决策速查
-
-1. **循环版 > 向量化版** — 各行业交易日历不同，pivot对齐导致窗口偏移
-2. **滚动回测 > 静态命中率** — 实战中主线分阶段轮换
-3. **schema 已冻结** — 不删不改现有主键，新因子只加字段
-4. **符号编码** — `{asset_type}.{ticker}.{exchange}`
-5. **Factor Registry** — 所有因子通过 registry.py 注册
-6. **先人工标注 → 再结构识别 → 不上 ML**
-7. **复权口径统一规范** — close=未复权, close_hfq=后复权, 前复权由 hfq_factor 动态推导
-   - 涨跌停判定 → pct_chg_raw
-   - 收益回测/RS/Momentum → close_hfq
-   - 人工看盘/K线 → 未复权 OHLC × qfq_factor
-   - 详见 `docs/database_schema.md`
+- [ ] 全量采集完成后验证数据完整性
+- [ ] 更新 docs/agent/00_data.md 中的数据覆盖统计
