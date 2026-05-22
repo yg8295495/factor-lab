@@ -1,12 +1,38 @@
-# 策略设计
+# 03_strategy.md — Strategy Boundary
 
-> 策略思路和组合规则待补充。
+> This repo is not yet building the final AI-DMS strategy layer.
 
-## 评估框架
+Current scope:
 
-- 回测基准：中证全指（index.000985.CSI）
-- 调仓频率：每 20 天
-- 超额衡量：累计收益率差
-- 胜率定义：超额为正的调仓次数占比
+- factor research
+- multi-factor scoring
+- Layer 3 structure evidence
+- rolling validation
+- signal output prototypes
 
-## 组合规则（待定）
+Not current scope:
+
+- final portfolio construction
+- execution engine
+- macro/NLP/capex expectation layer
+- final AI explanation layer
+
+When discussing "strategy" in this repo, treat it as:
+
+```text
+factor combination -> ranked signal -> rolling validation
+```
+
+Default benchmark:
+
+```text
+index.000985.SH
+```
+
+Default evaluation should report:
+
+- total return
+- excess return
+- window win rate
+- max drawdown
+- phase-level performance

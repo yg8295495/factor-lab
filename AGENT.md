@@ -1,50 +1,69 @@
-# AGENT.md — AI 工作导航
+# AGENT.md — AI Startup Router
 
-> 仅记录定位和索引。详细内容在 `docs/agent/` 下按需读取。
+> Purpose: fast orientation for a new AI session. Keep this file short.
+> Default startup should read only this file and `PLAN.md`.
 
-## 项目定位
+## Module Scope
 
-```yaml
-name: factor-lab
-db: data/quant_engine.db
-date_range: 2004-12-31 ~ 当前
-stocks: 全量 A 股（~5000+）
-indices: 25 | sectors: 30
-goal: 行业轮动因子研究 + 行为评分策略
-```
+`factor-lab` is the lightweight factor research submodule of the broader AI-DMS / Market State Engine.
 
-## 文档导航
+This repo only focuses on script-verifiable work:
 
-| 路径 | 内容 | AI 何时读 |
-|------|------|-----------|
-| `docs/agent/00_data.md` | 数据架构：TickFlow 主源、DB schema、复权口径 | 涉及数据/采集时 |
-| `docs/agent/01_factors.md` | 因子体系：注册、聚合、回测规范 | 涉及因子/回测时 |
-| `docs/agent/02_experiments.md` | 实验方向、方法论、各版本结论 | 涉及实验/分析时 |
-| `docs/agent/03_strategy.md` | 策略设计、组合规则、评估框架 | 涉及策略/组合时 |
+- Layer 1: raw market data needed by factors
+- Layer 2: single factors and cross-section features
+- Layer 3: factor combinations / structure evidence
+- Layer 9: lightweight chart inspection
 
-## 快速命令
+Out of scope for this repo for now:
+
+- macro research
+- capex / fundamentals narrative research
+- reports / news / NLP expectation layer
+- final AI-DMS state explanation layer
+
+## Hard Rules
+
+- Use the semi-wide SQLite design. Prefer appending daily fields to `market_daily_data`; do not split tables unless the data shape truly requires it.
+- Benchmark symbol is `index.000985.SH`.
+- Vectorized sector behavior scoring is forbidden for research conclusions.
+- Backtests must use rolling evaluation. Static hit rate is not accepted as evidence.
+- Keep experiments narrow: change one main variable, run loop-based rolling backtest, record the result.
+- Do not read `docs/archive/` or `docs/human/` unless the user explicitly asks or the current task needs it.
+- `codex.md` is deep background from a prior alignment conversation; do not read it by default.
+
+## What To Read
+
+| Task | Read |
+|------|------|
+| Current priority / next work | `PLAN.md` |
+| Data fields, sources, adjustment policy | `docs/agent/00_data.md` |
+| Factor definitions, Layer 2/3 boundaries, backtest rules | `docs/agent/01_factors.md` |
+| Experiment workflow and known conclusions | `docs/agent/02_experiments.md`, then `docs/research/INDEX.md` / `LESSONS.md` |
+| Strategy/portfolio discussion | `docs/agent/03_strategy.md` |
+| Exact schema details | `docs/database_schema.md` |
+
+## Core Commands
 
 ```bash
-# 数据采集
-python3 backend/collectors/tickflow_collector.py --mode daily   # 每日增量
-
-# 因子计算
+# Factor calculation
 python3 -m backend.research.features.calculator
 
-# 实验分析
-python3 backend/research/analysis/sector_behavior_score.py       # 行为评分
-python3 backend/research/analysis/sector_leadership.py            # 行业领涨
+# Trusted behavior-score experiments
+python3 backend/research/analysis/sector_behavior_score.py --rolling
+python3 backend/research/analysis/sector_behavior_score.py --continuous
 
-# 后端
-cd backend && python3 server.py
+# Historical sector leadership analysis
+python3 backend/research/analysis/sector_leadership.py
 
-# 前端
-cd frontend && npm run dev
+# Local app
+./start.sh
 ```
 
-## 行为铁律（来自 MEMORY.md）
+## Documentation Workflow
 
-- 遇到问题 3 次尝试过不去 → 停下和用户沟通
-- 修改代码后 → 同步更新 AGENT.md/PLAN.md/相关 agent 文档
-- AGENT.md + agent 文档只写精简事实不解释
-- 主数据源变更必须先讨论再改
+For each new experiment:
+
+1. Add or update one row in `docs/research/INDEX.md`.
+2. Write the full record under `docs/research/experiments/EXP-xxx-*.md`.
+3. Promote only durable conclusions to `docs/research/LESSONS.md`.
+4. Keep `PLAN.md` focused on the current sprint, not historical detail.

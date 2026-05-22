@@ -1,37 +1,46 @@
-# 实验方向与结论
+# 02_experiments.md — Experiment Workflow
 
-## 总体目标
+> Read this before changing factor formulas, scoring rules, or backtests.
 
-基于因子 → 行业评分的轮动策略，寻找行业切换的先行信号。
+## Goal
 
-## 方法论
+The repo should preserve research memory without forcing every new AI session to load long historical reports.
 
-- 分阶段用窗口回看行业行为（W1/W2/W3 三段式）
-- 循环版滚动回测，每 20 天调仓
-- 超额收益 vs 中证全指（index.000985.CSI）
+Default reading order:
 
-## 已完成
+1. `docs/research/INDEX.md`
+2. `docs/research/LESSONS.md`
+3. Only the specific experiment file if needed
 
-### v1 行业评分（已废弃）
-```
-方法: 单点阳线率+RS排名+成交量+持续性
-结果: 命中率 8.3%，天然偏向防御板块
-结论: 单点评分无法捕捉行业切换信号
-```
+## Experiment Loop
 
-### v2 v0.1 行为评分
-```
-方法: 转折期 3 区间回看（W1放量震荡+W2缩量洗盘+W3初升试探）
-结果: 130次调仓，累计超额 +60.5%，胜率 53.1%
-状态: ✅ 通过验证
-待改进:
-  - 区分"反弹放量"和"主线放量"（W3信号过滤）
-  - 动态 eval_offset 替代固定 30 天
+Every experiment should follow this control flow:
+
+```text
+hypothesis -> one main change -> loop-based rolling backtest -> JSON output -> experiment note -> lessons update
 ```
 
-## 待探索
+Rules:
 
-- W3 信号过滤（反弹 vs 主线）
-- 动态窗口周期
-- 多因子融合评分
-- 风险敞口控制
+- Change one major variable at a time.
+- Use loop-based rolling backtest.
+- Compare against a clearly defined baseline.
+- Store full details in one experiment file.
+- Promote only durable conclusions to `LESSONS.md`.
+
+## File Layout
+
+```text
+docs/research/INDEX.md                 # table of all experiments
+docs/research/LESSONS.md               # distilled durable lessons
+docs/research/experiments/EXP-xxx.md   # full single-experiment notes
+```
+
+Existing long reports may remain in `docs/research/` as source material, but new sessions should start from `INDEX.md` and `LESSONS.md`.
+
+## Existing Durable Conclusions
+
+- Static single-point sector strength scoring failed and is deprecated.
+- W1/W2/W3 loop-based behavior scoring is the current validated base.
+- Vectorized behavior scoring is forbidden for conclusions.
+- Rolling backtest quality matters more than static top-3 hit rate.

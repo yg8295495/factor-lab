@@ -1,57 +1,79 @@
-# 数据架构
+# 00_data.md — Data Rules
 
-## 主数据源：TickFlow（免费 API）
+> Read this only for data fields, sources, schema, or price-adjustment questions.
+> Do not use this file as a live collection progress log.
 
-```
-采集脚本: backend/collectors/tickflow_collector.py
-用法:     --mode full  # 全量（首次）
-          --mode daily # 每日增量
+## Database Shape
 
-特点:
-  - 无需注册，TickFlow.free() 直接用
-  - 一个接口返回三种复权数据（adjust 参数）
-  - 未复权: adjust='none'         → open/high/low/close/volume/amount
-  - 后复权: adjust='backward'     → close_hfq
-  - 前复权: adjust='forward'      → 动态计算用
-  - 速度: ~0.6只/秒（5线程并行，每个股票2次API调用）
+The project uses a personal research database:
+
+```text
+SQLite + semi-wide market_daily_data + small number of core tables
 ```
 
-## 数据落地
+Default rule:
 
-```yaml
-asset_master:
-  全量 A 股 ~5400 只，导入时自动注册
+- Daily raw data, factors, breadth, and structure evidence usually append fields to `market_daily_data`.
+- `asset_master.stable_industry` stores one primary industry.
+- `asset_master.tags` stores multi-label static categories.
+- Do not add normalized tables unless point-in-time historical membership is required.
 
-market_daily_data:
-  核心字段:
-    open/high/low/close:    "未复权"
-    close_hfq:              "后复权 close（回测用）"
-    hfq_factor:             "= close_hfq / close"
-    pct_chg_raw:            "涨跌幅(自算)"
-    limit_up/down_flag:     "涨跌停标记"
-  pct_chg_raw 计算: (close[t] - close[t-1]) / close[t-1] * 100
-  涨跌停判定: 主板≥9.8%, 科创/创业板≥19.5%, ST≥4.8%
+## Key Tables
+
+- `asset_master`: asset identity and static metadata
+- `market_daily_data`: OHLCV, valuation, factors, breadth, daily tags
+- `market_state_history`: final market-state output, later stage
+- `theme_tracking`: dynamic theme tracking, later stage
+- `ai_analysis_reports`: large AI report text, later stage
+- `ai_memory`: long-term AI memory, later stage
+
+Exact schema lives in `docs/database_schema.md`.
+
+## Symbol Convention
+
+```text
+index.000985.SH   # 中证全指, benchmark
+index.000300.SH   # 沪深300
+sector.801780.SW  # 申万行业
+stock.000001.SZ   # A 股个股
 ```
 
-## 复权口径规范
+Use `index.000985.SH`, not `index.000985.CSI`.
 
-| 场景 | 用哪个字段 |
-|------|-----------|
-| 涨跌停判定 | pct_chg_raw |
-| 收益回测/RS/Momentum | close_hfq（后复权） |
-| K 线展示 | 未复权 OHLC × hfq_factor[t] / hfq_factor[最新日] |
-| 技术指标（ATR/布林） | 未复权 high/low × (当前 hfq_factor / 最新 hfq_factor) |
-| 成交额/成交量 | volume/amount 原始值 |
-| 数据库 close | 未复权（原始收盘价） |
+## Price Adjustment Policy
 
-## 备案（应急降级）
+Target field semantics:
 
-```yaml
-方案: mootdx（未复权 OHLCV）+ baostock（后复权 close）
-脚本: backend/collectors/stock_pilot.py
-坑:
-  - baostock 每 80 次要重连
-  - locale 影响 pandas 日期解析
-  - mootdx 只能线程级复用（每次新建 Quotes()）
-详情: 极少用到，需要时直接看 stock_pilot.py 代码
+| Field | Meaning | Main Use |
+|------|---------|----------|
+| `open/high/low/close` | raw unadjusted OHLC | exchange-rule facts, chart source |
+| `volume/amount` | raw values | volume/turnover analysis |
+| `pct_chg_raw` | raw pct change | limit-up/down flags |
+| `close_hfq` | back-adjusted close | returns, RS, Momentum, MA breadth |
+| `hfq_factor` | `close_hfq / close` | derive adjusted OHLC when needed |
+
+Frontend forward-adjusted K-line:
+
+```text
+qfq_factor(t) = hfq_factor(t) / hfq_factor(latest_date)
+qfq_ohlc(t) = raw_ohlc(t) * qfq_factor(t)
 ```
+
+Back-adjusted high/low if needed later:
+
+```text
+high_hfq = high * hfq_factor
+low_hfq = low * hfq_factor
+```
+
+Short-term Layer 2/3 work mainly needs `close_hfq`, not stored `high_hfq` / `low_hfq`.
+
+## Data Sources
+
+Current individual-stock collection uses `TickFlow` scripts:
+
+- `backend/collectors/tickflow_collector.py`
+- `backend/collectors/tickflow_retry.py`
+
+Data-source troubleshooting and one-off collection notes belong in `docs/archive/`.
+After the one-time full-A collection is complete, do not keep collection progress in startup docs.

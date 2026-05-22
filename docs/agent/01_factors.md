@@ -1,39 +1,76 @@
-# 因子体系
+# 01_factors.md — Factor And Backtest Rules
 
-## 注册系统
+> Read this for factor implementation, Layer 2/3 boundaries, or backtest decisions.
 
-所有因子通过 FeatureRegistry 注册，不散落各处。
+## Layer Boundary
 
-```
-模块: backend/research/features/registry.py
-入口: backend/research/features/calculator.py（--daily 已禁用）
-```
+Layer 2 features are single-variable or direct cross-section measurements.
+Layer 3 combines multiple Layer 2 features into structure evidence.
 
-## 因子维度
+Do not make a Layer 2 feature claim a final market state by itself.
 
-| 维度 | 因子 | 数据源/计算方式 |
-|------|------|----------------|
-| 趋势 | rs20_cross, rs60_cross, rs_slope | 后复权 close × 基准指数 |
-| 动量 | time_momentum20, time_momentum60, trend_strength | 后复权 close |
-| 量价 | volume_ratio, amount_ratio, price_volume_divergence | 未复权 volume/amount |
-| 突破 | breakout_strength, price_vol_divergence | 后复权 close + volume |
-| 估值 | pe_ttm, pb, ps, peg, dividend_yield | baostock/a股财务数据 |
-| 成长 | roe, gross_margin, revenue_growth, profit_growth | 财报数据 |
-| Breadth | above_ma20_ratio, above_ma60_ratio, new_high_20d_ratio | 后复权 close，行业维度 |
-| 情绪 | limit_up_count, limit_down_count, market_adv_ratio | 涨跌停统计，全市场维度 |
-| 风格 | growth_score, dividend_score, small_cap_score | 因子聚合 |
+## Registry
 
-## 因子聚合思路
+Feature definitions live in:
 
-```
-个股因子 → 行业聚合（中位数/均值） → 风格因子
-行业因子 × 权重 → 全市场特征
+```text
+backend/research/features/registry.py
 ```
 
-回测使用后复权 close，禁止静态命中率评估。
+Factor calculation lives in:
 
-## 回测规范
+```text
+backend/research/features/calculator.py
+```
 
-- 滚动窗口每 20 天调仓
-- 使用循环版（非向量化），各行业独立做 dropna() 定位窗口
-- 原因：不同行业交易日历不同，向量化 pivot 导致窗口偏移（匹配率仅 34.7%）
+Prefer adding metadata to existing `FeatureDef` rather than replacing the registry with a complex hierarchy.
+
+Useful metadata candidates:
+
+- `family`: relative / breadth / structure / context
+- `scope`: asset / sector / market / cross_sector
+- `layer`: 2 / 3
+- `structure_role`: trend / participation / confirmation / risk / style
+
+Layer 3 combination rules should live under:
+
+```text
+backend/research/structures/
+```
+
+## Current Factor Families
+
+| Family | Examples | Price/Data Basis |
+|--------|----------|------------------|
+| Relative strength | `rs20_cross`, `rs60_cross`, `rs_slope` | `close_hfq` vs `index.000985.SH` |
+| Momentum | `time_momentum20`, `time_momentum60`, `trend_strength` | `close_hfq` |
+| Breadth | `above_ma20_ratio`, `above_ma60_ratio`, `new_high_20d_ratio`, `rs_positive_ratio` | stock `close_hfq`, aggregated to sector rows |
+| Emotion | `limit_up_count`, `limit_down_count`, `market_adv_ratio` | raw pct change / limit flags |
+| Volume/amount | `volume_ratio`, `amount_ratio`, `price_vol_divergence` | raw volume/amount + adjusted price direction |
+| Valuation/context | `pe_ttm_pct`, `pe_change_rate`, `dividend_yield_pct` | valuation fields |
+
+## Backtest Rules
+
+- Use rolling evaluation only.
+- Default comparison is excess return vs `index.000985.SH`.
+- Prefer one main variable change per experiment.
+- Record data range, asset pool, rebalance frequency, holding period, benchmark, and transaction-cost assumption.
+
+## Forbidden Path
+
+Vectorized sector behavior scoring is not trusted.
+
+Reason:
+
+```text
+Different sector calendars + pivot alignment changed window semantics.
+Vectorized vs loop match rate was only 34.7%.
+```
+
+Use loop-based behavior scoring only:
+
+```text
+calc_sector_rolling_score()
+```
+
+Do not use `--daily` results from `sector_behavior_score.py` as research evidence.

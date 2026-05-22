@@ -1,12 +1,24 @@
-# PLAN.md — 进度 & 待办
+# PLAN.md — Current Sprint
 
-## 已完成
+## Current Focus
 
-- 全量 A 股数据采集：TickFlow 脚本编写中，后台运行
-- 数据验证：5 只个股 × 三种复权口径，100% 通过 ✅
-- 文档体系重组：AGENT.md → 精简导航 + 4 个 agent 文档
+Stabilize the factor-research workflow after full-A data ingestion:
 
-## 待办
+- Keep documentation lightweight for new AI sessions.
+- Build a repeatable experiment loop for Layer 2 factors and Layer 3 combinations.
+- Next research direction: integrate sector/market breadth into the loop-based W1/W2/W3 behavior score and compare `base` vs `base + breadth`.
 
-- [ ] 全量采集完成后验证数据完整性
-- [ ] 更新 docs/agent/00_data.md 中的数据覆盖统计
+## Immediate Tasks
+
+- [x] Reorganize AI guidance into short startup docs plus research index/lessons.
+- [ ] Freeze the experiment record template under `docs/research/experiments/`.
+- [ ] Audit the trusted loop-based backtest entry points before the next experiment.
+- [ ] Define the first breadth-enhanced experiment as `EXP-003`.
+
+## Do Not Track Here
+
+- One-off data collection logs
+- Long experiment reports
+- Archived data-source troubleshooting
+
+Those belong in `docs/archive/` or `docs/research/experiments/`.
