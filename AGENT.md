@@ -1,7 +1,7 @@
 # AGENT.md — AI Startup Router
 
 > Purpose: fast orientation for a new AI session. Keep this file short.
-> Default startup should read only this file and `PLAN.md`.
+> Default startup should read only this file, `PLAN.md`, and `docs/research/MEMORY.md`.
 
 ## Module Scope
 
@@ -35,12 +35,16 @@ Out of scope for this repo for now:
 
 | Task | Read |
 |------|------|
-| Current priority / next work | `PLAN.md` |
+| Current priority / next work | `PLAN.md`, then `docs/research/MEMORY.md` |
 | Data fields, sources, adjustment policy | `docs/agent/00_data.md` |
 | Factor definitions, Layer 2/3 boundaries, backtest rules | `docs/agent/01_factors.md` |
 | Experiment workflow and known conclusions | `docs/agent/02_experiments.md`, then `docs/research/INDEX.md` / `LESSONS.md` |
 | Strategy/portfolio discussion | `docs/agent/03_strategy.md` |
 | Exact schema details | `docs/database_schema.md` |
+
+Use `docs/research/MEMORY.md` as a short navigation index. Only read long reports,
+experiment records, or archive files when a memory row points to them or the current
+task specifically needs that detail.
 
 ## Core Commands
 
@@ -61,9 +65,11 @@ python3 backend/research/analysis/sector_leadership.py
 
 ## Documentation Workflow
 
-For each new experiment:
+For each resumable task or experiment:
 
-1. Add or update one row in `docs/research/INDEX.md`.
-2. Write the full record under `docs/research/experiments/EXP-xxx-*.md`.
-3. Promote only durable conclusions to `docs/research/LESSONS.md`.
-4. Keep `PLAN.md` focused on the current sprint, not historical detail.
+1. Add a short retrieval row in `docs/research/MEMORY.md`.
+2. For formal experiments, add or update one row in `docs/research/INDEX.md`.
+3. Write full experiment records under `docs/research/experiments/EXP-xxx-*.md`.
+4. Put one-off source tests and troubleshooting under `docs/archive/`.
+5. Promote only durable conclusions to `docs/research/LESSONS.md`.
+6. Keep `PLAN.md` focused on the current sprint, not historical detail.

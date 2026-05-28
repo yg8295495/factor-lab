@@ -12,6 +12,23 @@ State the single main idea being tested.
 
 Name the exact baseline used for comparison.
 
+## Pre-run Gate
+
+- data coverage sufficient:
+- required fields populated:
+- industry / asset-pool mapping reliable:
+- future-function risk checked:
+- survivorship-bias risk checked:
+- rebalance / holding / benchmark settings confirmed:
+- transaction-cost assumption confirmed:
+
+## Confirmation
+
+- confirmed by:
+- confirmation date:
+- confirmed scope:
+- notes:
+
 ## Input Data
 
 - data range:

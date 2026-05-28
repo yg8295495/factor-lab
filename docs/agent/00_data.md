@@ -75,5 +75,15 @@ Current individual-stock collection uses `TickFlow` scripts:
 - `backend/collectors/tickflow_collector.py`
 - `backend/collectors/tickflow_retry.py`
 
+External data tools such as `a-stock-data` may be used as provider adapters, but
+they do not define the repo's data contract. Normalize every provider into the
+symbol, adjustment, unit, and field policy above before writing to the database.
+
+Runtime rules and execution SOP:
+
+```text
+docs/research/data_runtime_spec_v1.md
+```
+
 Data-source troubleshooting and one-off collection notes belong in `docs/archive/`.
 After the one-time full-A collection is complete, do not keep collection progress in startup docs.

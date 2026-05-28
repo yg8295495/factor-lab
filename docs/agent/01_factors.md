@@ -49,6 +49,28 @@ backend/research/structures/
 | Volume/amount | `volume_ratio`, `amount_ratio`, `price_vol_divergence` | raw volume/amount + adjusted price direction |
 | Valuation/context | `pe_ttm_pct`, `pe_change_rate`, `dividend_yield_pct` | valuation fields |
 
+## Current Scope Decision
+
+The current registered factor pool is enough for the first market-state and
+main-line sector research loop. Do not add external factor libraries by default.
+
+The near-term bottleneck is data readiness and second-pass aggregation:
+
+- complete stock-to-sector mapping for all 30 Shenwan sectors
+- market advance / decline and limit-up / limit-down aggregation
+- sector internal breadth aggregation
+- market and sector amount-strength aggregation
+
+Stock-level data is mainly used for aggregation. The first version does not need
+to calculate `RS20`, `MOM20`, or trend scores for every stock unless a later
+experiment explicitly tests stock-level relative strength.
+
+Detailed scope note:
+
+```text
+docs/research/factor_scope_v1.md
+```
+
 ## Backtest Rules
 
 - Use rolling evaluation only.
