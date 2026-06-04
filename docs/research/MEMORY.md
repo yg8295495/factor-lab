@@ -26,7 +26,9 @@
 | 2026-05-29 | amount_ratio / 额比写入 | data-audit | 所有 sector 行 + index.000985.SH 写入 amount_ratio = amount/SMA20(amount)。sector 132514/133084 行覆盖。 | `backend/collectors/compute_amount_ratio.py` | complete |
 | 2026-05-29 | ETF净申赎 / 量能增强方向 | reference | 评估 tushare etf_share_size 作为未来量能信号增强的数据源。成交额占比和净申赎实时算，不持久化。 | `docs/research/etf_flow_as_signal_v1.md` | reference |
 | 2026-06-04 | 市场状态识别 EXP-004 / 五维度分类 | experiment-result | 6轮迭代(v0→v0.5)，最终 bear false MAIN_UP 3.0%, bull MAIN_UP recall 10.5%。诊断确认已到规则边界，剩余模糊窗口交给行业层(EXP-003)。最终规则固化在 v0.5。 | `docs/research/experiments/EXP-004-market-state-recognition-v0.md` | complete |
-| 2026-06-05 | EXP-003 / 市场状态过滤 / 行业宽度量能确认 | experiment-design | 设计三组对照：EXP-002基线、市场状态过滤、状态+行业宽度/额比确认；等待确认后只读实现评估器。 | `docs/research/experiments/EXP-003-breadth-enhanced-behavior-score.md` | design-draft |
+| 2026-06-05 | EXP-003 / Variant D / 状态=仓位 | experiment-result | D(≥6) 确认为当前基线：+985%收益,+341%超额,-46%回撤。CHAOS贡献46%，方向筛选有效✅ 强识别待验证⚠️ | `docs/research/experiments/EXP-003-breadth-enhanced-behavior-score.md` | complete |
+| 2026-06-05 | EXP-006 / 信号生命周期分析 | experiment-result | 5/10/20/40/60D 四条曲线完成。Delta(W2-W3)=生命周期位置因子（解释性，非交易性）。Variant E融合测试失败。 | `output/exp006*/` | complete |
+| 2026-06-05 | EXP-007 / State×Lifecycle融合 | experiment-result | Delta作为实时选择过滤器不成立。E_state_lifecycle(377.8%) / E_sens_hard(633.1%) 均不如D(985.3%)。行业层研究收口。 | `docs/research/experiments/EXP-007-state-lifecycle-fusion.md` | complete |
 
 
 ## Type Guide

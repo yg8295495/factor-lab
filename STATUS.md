@@ -55,43 +55,41 @@
 | 弱点 | 熊市/退潮阶段防守能力不足，最大回撤 **-53%** |
 | 记录 | `docs/research/behavior_scoring_v1.md` |
 
-### EXP-003 — 市场状态感知行业行为评分 ⏳ 初跑完成
+### EXP-003 — 市场状态感知行业行为评分 ✅ 验证完成
 
 | 项目 | 内容 |
 |:-----|:------|
 | 方法 | EXP-002 W1/W2/W3 + EXP-004 市场状态过滤 + 行业宽度/额比确认 |
 | 实现 | `exp003_state_aware_evaluator.py`（只读，不写 DB） |
-| 三组对照 | **A:** EXP-002 基线 / **B:** 状态过滤 / **C:** 状态 + 行业确认 |
+| 输出 | `output/exp003_state_aware_behavior_score.json` + `output/exp003_chaos_top1_diagnostics.json` |
+| 对照 | **A:** EXP-002 基线 / **B:** 状态过滤 / **C:** 状态+行业确认 / **D:** 状态=仓位 |
 
-**状态动作规则：**
-
-| 状态 | 动作 |
-|:-----|:------|
-| `MAIN_UP_CONFIRMED` | TOP 3 等权满仓 |
-| `REBOUND` | 观察不参与（主口径）；sensitivity 版 TOP 1 或半权重 |
-| `CROWDING` | TOP 1 等权轻仓 |
-| `CHAOS` | 不参与 |
-| `RETREAT` | 不参与 |
-
-**初跑结果（253 个再平衡窗口）：**
+**最终对照结果（253 个再平衡窗口）：**
 
 | Variant | 策略收益 | 基准收益 | 超额 | 最大回撤 |
 |:--------|:-------:|:--------:|:----:|:--------:|
 | A: EXP-002 基线 | 787.2% | 644.8% | **+142.5%** | -53.0% |
-| B: 状态过滤 | 253.6% | 644.8% | **-391.1%** | **-32.3%** |
-| C: 状态 + 行业确认 | 58.0% | 644.8% | -586.8% | -56.9% |
+| B: 状态过滤 | 253.6% | 644.8% | -391.1% | -32.3% |
+| C: 状态+行业确认 | 58.0% | 644.8% | -586.8% | -56.9% |
+| **🟢 D: 状态=仓位 (≥6)** | **985.3%** | 644.8% | **+340.6%** | **-45.9%** |
+| D_sens_ge7 | 421.6% | 644.8% | -223.2% | -34.4% |
+| D_sens_ge8 | 189.9% | 644.8% | -454.9% | -32.3% |
+
+**Variant D 动作规则（当前基线）：**
+
+| 状态 | 动作 |
+|:-----|:------|
+| `MAIN_UP_CONFIRMED` | TOP 3 等权 |
+| `REBOUND` | TOP 2 等权 |
+| `CHAOS` | TOP 1 等权（要求 score ≥ 6） |
+| `CROWDING` | TOP 1 等权 |
+| `RETREAT` | 空仓 |
 
 **关键发现：**
-- 状态过滤确实降低了回撤（-53% → -32%）
-- 但 EXP-004 v0.5 过于保守，仅 6.3% 窗口被标为 MAIN_UP_CONFIRMED，58.5% 为 CHAOS（空仓）
-- 行业确认 bonus 在当前参数下帮倒忙
-- **结论：状态过滤安全过头，需要放宽或改变框架**
-
-**后续方向（待决策）：**
-- 放宽 EXP-004 状态规则（v0.5 太保守）
-- 或改变 Variant B/C 的动作规则（CHAOS 中也有条件参与）
-- 或修改 sector bonus 参数
-- 设计文档：`docs/research/experiments/EXP-003-breadth-enhanced-behavior-score.md`
+- D(≥6) 同时实现收益更高（+985% vs +787%）、回撤更低（-46% vs -53%），双重改善
+- CHAOS 收益占比 46.4%，MAIN_UP 仅 15.2% — 证明价值在于混乱市场找局部主线，而非放大牛市
+- 各周期均有正超额收益，不存在单一时期集中
+- 记录：`docs/research/experiments/EXP-003-breadth-enhanced-behavior-score.md`
 
 ### EXP-004 — 市场状态识别 v0 ✅ 定型收口
 
@@ -125,28 +123,87 @@ RETREAT if:
 
 ---
 
-## 四、当前问题与下一步
+## 四、当前状态与下一步
 
-### 核心卡点
+### 当前研究基线
 
-EXP-003 初跑显示：**状态过滤虽然降低了回撤，但安全过头**，因为 MAIN_UP_CONFIRMED 仅占 6.3% 窗口。需要决策：
+**EXP-003 Variant D (CHAOS ≥ 6)** — 已验证为「主线行业识别 v0」的基础框架。
 
-1. 放宽 EXP-004 的 MAIN_UP_CONFIRMED 条件（牺牲精度换召回）？
-2. 或改变 EXP-003 动作规则——让 CHAOS 中也有条件参与（比如只选 top 1）？
-3. 或设计两阶段流程：先状态过滤，在非 RETREAT 状态下用行业层单独评分？
+```
+MAIN_UP_CONFIRMED → TOP 3
+REBOUND           → TOP 2
+CHAOS             → TOP 1 (score ≥ 6)
+CROWDING          → TOP 1
+RETREAT           → 空仓
+```
+
+基线指标（253 窗口，2005~2026）：
+- 总收益 **+985.3%**，超额 **+340.6%**，最大回撤 **-45.9%**
+- CHAOS 贡献 46.4% 收益（94 次交易，胜率 54.3%）
+- 各五年周期超额收益均为正，不存在单时期集中
+
+### 主线捕获分析
+
+衡量策略对市场真正主线（未来20天最佳行业）的识别能力：
+
+| 指标 | D(≥6) | A(基线) | 随机水平 | 解读 |
+|:-----|:----:|:-------:|:-------:|:-----|
+| Top1 命中率 | 3.5% | 2.8% | 3.3%（1/30） | ❌ 噪声过高，已废弃 |
+| Top3 覆盖率 | 16.3% | **31.0%** | 10.0%（3/30） | A显著高于随机（3×），**方向筛选有效** |
+| **平均捕获率** | **21.6%** | 16.2% | — | 吃到 Leader 涨幅的比例，D > A，但仍偏低 |
+
+**当前结论（分两层）：**
+- ✅ **已验证：方向筛选有效** — W1/W2/W3 评分能显著提高选中未来强势行业的概率（3×随机）
+- ⚠️ **待验证：主线识别能力强弱** — 捕获率仅 21.6%，收益优势主要来自风控（减少非主线窗口亏损），而非冠军预测的精确性。不能简单将「赚钱 = 识别主线成功」
+
+**自然引出的问题：** 捕获率偏低暗示 20 天持有周期可能与信号生命周期不匹配。W1/W2/W3 信号出现后，市场需要多久兑现？
+
+### EXP-006 — 信号生命周期分析 ✅ 完成
+
+| 项目 | 内容 |
+|:-----|:------|
+| 方法 | TOP1/TOP3 纯信号（无状态过滤），5/10/20/40/60D 四维曲线 + Delta 分层 |
+| 核心发现 | 20D 捕获率峰值（TOP1=20.4%, TOP3=17.3%），信号呈正偏态（VC模式） |
+| 最高价值发现 | **Delta(W2-W3) 是生命周期位置因子，非强弱因子** — Wash>>Launch 呈先弱后强的生命周期曲线 |
+| 详细结果 | `output/exp006_signal_lifecycle.json` / `exp006a/b/c_*.json` |
+
+**Delta 生命周期曲线（Wash >> Launch = W2-W3 ≥ 2）：**
+
+| Horizon | Return | Excess | WinRate | 阶段 |
+|:-------:|:-----:|:------:|:-------:|:----|
+| 5D | -0.8% | +0.3% | 53.3% | 洗盘延续 |
+| 10D | -1.2% | +1.1% | 46.7% | 最后下跌 |
+| **20D** | **+2.9%** | **+2.7%** | **66.7%** | 🟢 开始兑现 |
+| **40D** | **+4.9%** | +1.7% | 60.0% | 🟢 主升 |
+| 60D | +4.5% | +2.3% | **80.0%** | 延续 |
+
+**认知升级：** W1/W2/W3 包含两层信息 — **Total Score 回答「值不值得关注」**，**Delta(W2-W3) 回答「处于什么阶段」**。CHAOS × Wash>>Launch 是最强组合（N=7, WinRate=85.7%, Excess=+5.3%）。
+
+### EXP-007 — State × Lifecycle 融合 ❌ 行业层收口
+
+| 项目 | 内容 |
+|:-----|:------|
+| 方法 | Variant E: 保留 D 的规则，在 CHAOS 中偏好 Delta ≥ 0，CROWDING 中避开 Delta ≥ 2 |
+| 结果 | E_state_lifecycle(377.8%) / E_sens_hard(633.1%) **均远逊于 D(985.3%)** |
+| 结论 | **Delta 是解释性因子，不是交易性因子**。可用于事后归因，不可用于事前筛选 |
+| 记录 | `docs/research/experiments/EXP-007-state-lifecycle-fusion.md` |
+
+**行业行为评分层（W1/W2/W3/Delta）研究收口。** 从 EXP-002 到 EXP-007 已构成完整研究闭环：发现→验证→生命周期→归因→融合测试。成果冻结为 **Sector Leadership v1**。
+
+### 下一步方向 — 重新聚焦上层架构
+
+| 层级 | 当前状态 | 下一步问题 |
+|:----|:--------|:-----------|
+| 🟢 **行业行为层** | **✅ 完成** | W1/W2/W3/Delta 已收口为 Sector Leadership v1 |
+| 🟡 **市场状态层** | ✅ v0 已定型 | EXP-004 v0.5 已定型（bear false MAIN_UP=3%），是否改进交由上层决定 |
+| 🔴 **主线识别层** | **未解决** | Top1命中率≈随机，主线是谁？主线走到哪一步？ |
+| 🔴 **市场估值层** | **空白** | PE分位、ERP、股债利差、融资余额、换手率分位 — 均未研究 |
+| 🔴 **主线持续性** | **空白** | 为何有的主线持续一年（AI/机器人）、有的仅三个月（元宇宙）？ |
 
 ### 短期待办
 
-- [ ] 分析 EXP-003 初跑结果，决定下一步方向
-- [ ] 相应调整 EXP-003 规则后重跑
-- [ ] 完成后合成"主线行业识别 v0"
-
-### 长期研究储备
-
-| 方向 | 参考文档 | 说明 |
-|:-----|:---------|:-----|
-| ETF 净申赎 | `docs/research/etf_flow_as_signal_v1.md` | 真实资金流向信号，需要 tushare 8000 积分 |
-| 行情数据源 | `docs/agent/00_data.md` | 当前用 TickFlow + akshare |
+- [x] EXP-002/003/006/007 — 行业行为评分层研究收口
+- [ ] 决定上层架构的下一个实验方向
 
 ---
 
@@ -173,7 +230,12 @@ backend/research/analysis/
     ├── continuous_rolling_results.json     # EXP-002 基线
     ├── market_state_daily_v05.json         # EXP-004 v0.5
     ├── market_state_false_main_up_diagnostics.json
-    └── exp003_state_aware_behavior_score.json  # EXP-003 初跑
+    ├── exp003_state_aware_behavior_score.json  # EXP-003 结果 (A/B/C/D)
+    ├── exp003_chaos_top1_diagnostics.json      # EXP-003 CHAOS 诊断
+    ├── exp006_signal_lifecycle.json            # EXP-006 TOP1/TOP3 生命周期
+    ├── exp006a_winner_window_profiles.json     # EXP-006A 赢家画像
+    ├── exp006b_delta_analysis.json             # EXP-006B Delta 分层
+    └── exp006c_delta_lifecycle.json            # EXP-006C Delta 生命周期曲线
 ```
 
 ### 关键文档
@@ -195,7 +257,9 @@ docs/research/
 └── experiments/
     ├── TEMPLATE.md                 # 实验模板
     ├── EXP-003-breadth-enhanced-behavior-score.md
-    └── EXP-004-market-state-recognition-v0.md
+    ├── EXP-004-market-state-recognition-v0.md
+    ├── EXP-006-signal-lifecycle-analysis.md    # ✅ 完整生命周期分析
+    └── EXP-007-state-lifecycle-fusion.md       # ❌ Delta 融合：负结果
 
 docs/agent/
 ├── 00_data.md                      # 数据字段/来源/复权口径

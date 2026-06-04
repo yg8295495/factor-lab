@@ -96,3 +96,56 @@ calc_sector_rolling_score()
 ```
 
 Do not use `--daily` results from `sector_behavior_score.py` as research evidence.
+
+## W1/W2/W3 Behavior Score (Sector Leadership v1)
+
+### Structure
+
+The behavior score divides the past 90 trading days into three 20-day windows:
+
+```
+T-90         T-60    T-40    T-20       T
+ │            │       │       │          │
+ ─────┴────────┴───────┴───────┴──────────┴───
+              │       │       │          │
+              W1      W2      W3         eval
+           放量震荡   缩量洗盘  初升试探
+```
+
+Each window scores 0-3 sub-points, total 0-9.
+
+### Two Information Layers (discovered in EXP-006)
+
+| Layer | Source | Answers | Use |
+|-------|--------|---------|-----|
+| `Total Score` | W1+W2+W3 | 是否值得关注 (worth watching?) | Ranking across sectors |
+| `Delta = W2 - W3` | W2 sub-score − W3 sub-score | 处于什么阶段 (lifecycle stage?) | Position explanation (EXP-007 confirmed: explanatory, not a trading filter) |
+
+### Delta Interpretation
+
+| Delta Range | Meaning | Lifecycle Curve |
+|:----------:|---------|:---------------:|
+| ≥ 2 (Wash >> Launch) | 洗盘充分，启动不足 | −1.2% @10D → +4.9% @40D (先弱后强) |
+| 0.5~2 (Wash > Launch) | 洗盘略强 | +1.1% @20D (适中) |
+| −0.5~0.5 (Balanced) | 整理和启动均衡 | +2.4% @20D, 60.4% win (最稳健) |
+| −2~−0.5 (Launch > Wash) | 已启动但整理不足 | +0.3% @20D, 46.6% win (短期惯性, 衰减) |
+| ≤ −2 (Launch >> Wash) | 已明显启动, 追高 | +1.2% @20D, 40.9% win (短期好, 后继弱) |
+
+### Current Baseline (Variant D)
+
+```
+MAIN_UP_CONFIRMED → TOP 3 equal weight
+REBOUND           → TOP 2 equal weight
+CHAOS             → TOP 1 (total score ≥ 6)
+CROWDING          → TOP 1 equal weight
+RETREAT           → no holdings
+```
+
+Performance: 253 windows (2005~2026), +985.3% return, +340.6% excess vs `index.000985.SH`, −45.9% maxDD.
+
+**Key validation:** CHAOS contributes 46.4% of total return — the framework's value lies in identifying local themes during chaotic markets, not amplifying bull runs.
+
+### Forbidden Path
+
+- Delta(W2-W3) is NOT a trading filter. EXP-007 tested State × Lifecycle fusion; both variants underperformed D. Delta explains lifecycle position in hindsight only.
+- Despite positive excess, Top1 hit rate (~3.5%) is near random. The system has direction filtering ability (Top3 coverage 3× random) but not champion prediction.
