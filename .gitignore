@@ -25,3 +25,6 @@ logs/
 # 生成的分析输出
 backend/research/analysis/output/*.json
 backend/research/features/output/
+
+# 数据采集过程文件
+data/*.csv

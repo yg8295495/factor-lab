@@ -2,24 +2,19 @@
 
 ## Current Focus
 
-Stabilize the factor-research workflow after full-A data ingestion:
+EXP-003 first evaluator run complete. Key finding: state filtering reduces drawdown but is too conservative (MAIN_UP_CONFIRMED only 6.3% of windows). Needs analysis before iteration.
 
-- Keep documentation lightweight for new AI sessions.
-- Build a repeatable experiment loop for Layer 2 factors and Layer 3 combinations.
-- Current research direction: finish data readiness for market-state and main-line sector recognition before formal factor-combination backtests.
-- Use the existing registered factor pool first; do not expand external factors until current data-derived factors are audited.
+- Next: analyze EXP-003 results, decide whether to relax state rules or change Variant action logic.
+- See `backend/research/analysis/output/exp003_state_aware_behavior_score.json` for preliminary numbers.
 
 ## Immediate Tasks
 
-- [x] Reorganize AI guidance into short startup docs plus research index/lessons.
-- [x] Freeze the experiment record template under `docs/research/experiments/`.
-- [x] Define the research memory and experiment confirmation workflow.
-- [x] Record the first-pass factor scope decision.
-- [x] Audit stock-to-sector mapping coverage for all 30 Shenwan sectors.
-- [x] Audit raw stock fields needed for breadth, emotion, and amount aggregation.
-- [x] Define data runtime spec and provider-adapter SOP.
-- [ ] Design second-pass calculations for market emotion, sector breadth, and amount strength.
-- [ ] After data readiness, define the market-state and main-line sector combination backtests.
+- [x] All 6 data readiness tasks (mapping, pct_chg_raw, emotion, breadth, amount_ratio).
+- [x] Schema cleanup: rolled back 4 unauthorized columns.
+- [x] **EXP-004: Market state recognition v0** — 6 iterations, finalized at v0.5.
+- [x] EXP-003: design draft + first evaluator run.
+- [ ] Analyze EXP-003 results and decide next iteration direction.
+- [ ] Main-line sector recognition v0 (synthesis of market state + sector scoring).
 
 ## Do Not Track Here
 

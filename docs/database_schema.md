@@ -113,7 +113,7 @@
 | `trend_strength` | REAL | Context | 趋势综合评分（RS+MOM+斜率，0~100） |
 | `breakout_strength` | REAL | Context | 突破强度（收盘价偏离 MA20 幅度） |
 | `volume_ratio` | REAL | Context | 量比 |
-| `amount_ratio` | REAL | Context | 额比 |
+| `amount_ratio` | REAL | Context | 额比 = amount / SMA20(amount)。对 sector 行和 index.000985.SH 均适用 |
 | `price_volume_state` | TEXT | Context | 量价状态标记 |
 | `pe_ttm_pct` | REAL | Context | PE 历史 250 日百分位 |
 | `pe_change_rate` | REAL | Context | PE_TTM 20 日变化率 |
