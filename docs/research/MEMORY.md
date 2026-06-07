@@ -29,8 +29,8 @@
 | 2026-06-05 | EXP-003 / Variant D / 状态=仓位 | experiment-result | D(≥6) 确认为当前基线：+985%收益,+341%超额,-46%回撤。CHAOS贡献46%，方向筛选有效✅ 强识别待验证⚠️ | `docs/research/experiments/EXP-003-breadth-enhanced-behavior-score.md` | complete |
 | 2026-06-05 | EXP-006 / 信号生命周期分析 | experiment-result | 5/10/20/40/60D 四条曲线完成。Delta(W2-W3)=生命周期位置因子（解释性，非交易性）。Variant E融合测试失败。 | `output/exp006*/` | complete |
 | 2026-06-05 | EXP-007 / State×Lifecycle融合 | experiment-result | Delta作为实时选择过滤器不成立。E_state_lifecycle(377.8%) / E_sens_hard(633.1%) 均不如D(985.3%)。行业层研究收口。 | `docs/research/experiments/EXP-007-state-lifecycle-fusion.md` | complete |
-
-
+| 2026-06-05 | **Sector Leadership v1 整体收口** | milestone | ✅ 行业行为评分层从发现到融合全部闭环。EXP-002→003→004→006→007 构成完整研究链。当前基线 EXP-003 Variant D（+985%, +341%超额）。 | `PLAN.md` | complete |
+| 2026-06-08 | **Phase A 因子语义映射完成** | milestone | ✅ 21因子×13阶段IC测试全部完成。17因子注册入库(12MAIN+5AUX)。CR3全场最强(0.232)。registry/calculator v2.0冻结。 | `docs/agent/06_phase_a_master_plan.md` | complete |
 ## Type Guide
 
 - `data-audit`: data coverage, field quality, source checks, schema readiness.

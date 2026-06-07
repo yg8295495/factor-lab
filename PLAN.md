@@ -1,25 +1,33 @@
-# PLAN.md — Current Sprint
+# PLAN.md — 当前 Sprint
 
-## Current Focus
+## 当前进度
 
-EXP-003 first evaluator run complete. Key finding: state filtering reduces drawdown but is too conservative (MAIN_UP_CONFIRMED only 6.3% of windows). Needs analysis before iteration.
+**Phase A（因子语义映射）已完成。** 21 个因子全部通过 13 阶段 IC 测试，registry/calculator 已冻结为 v2.0。
 
-- Next: analyze EXP-003 results, decide whether to relax state rules or change Variant action logic.
-- See `backend/research/analysis/output/exp003_state_aware_behavior_score.json` for preliminary numbers.
+### 本轮完成
 
-## Immediate Tasks
+| 阶段 | 内容 | 状态 |
+|:----|:-----|:----:|
+| Phase A-① 趋势与动量 | RS20(比值), MOM20/60, Accel, RS60 | ✅ |
+| Phase A-② 波动率 | Vol20(逐行业), VolRatio | ✅ |
+| Phase A-③ 广度扩散 | PartRate, BreadthChg, NewHigh | ✅ |
+| Phase A-④ 价量+领导力 | AmtRatio, VolBkOut, CR3, CR5, TopDisp | ✅ |
+| Phase A-⑤ 风格 | SCSpread, AdvDecl | ✅ |
+| 注册冻结 | registry.py/calculator.py/01_factors.md 全部更新 | ✅ |
 
-- [x] All 6 data readiness tasks (mapping, pct_chg_raw, emotion, breadth, amount_ratio).
-- [x] Schema cleanup: rolled back 4 unauthorized columns.
-- [x] **EXP-004: Market state recognition v0** — 6 iterations, finalized at v0.5.
-- [x] EXP-003: design draft + first evaluator run.
-- [ ] Analyze EXP-003 results and decide next iteration direction.
-- [ ] Main-line sector recognition v0 (synthesis of market state + sector scoring).
+### 当前基线
 
-## Do Not Track Here
+17 因子注册库（12 MAIN + 5 AUX），参见 `docs/agent/01_factors.md`
 
-- One-off data collection logs
-- Long experiment reports
-- Archived data-source troubleshooting
+| 最强因子 | Avg|IC| | 备注 |
+|:---------|:-----:|:------|
+| CR3 | 0.232 | 行业集中度 — 全场最强 |
+| SCSpread | 0.205 | 大小票剪刀差 |
+| CR5 | 0.205 | 行业集中度 |
+| Mom20 | 0.188 | 20日动量 |
+| AdvDecl | 0.181 | 行业涨跌比 |
 
-Those belong in `docs/archive/` or `docs/research/experiments/`.
+## 下一步
+
+- [ ] **Phase B** — 17 因子正交性分析 + 阶段权重 + 组合设计
+- [ ] **Phase C** — 组合验证（对照 EXP-003 Variant D 基线）

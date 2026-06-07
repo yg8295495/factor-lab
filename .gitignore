@@ -22,6 +22,11 @@ logs/
 # CodeBuddy
 .codebuddy/
 
+# Reasonix AI tools
+.reasonix/
+.codegraph/
+reasonix.toml
+
 # 生成的分析输出
 backend/research/analysis/output/*.json
 backend/research/features/output/

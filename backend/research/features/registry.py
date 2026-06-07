@@ -1,319 +1,221 @@
 """
-Feature Registry — 因子注册表
+Feature Registry — 因子注册表 (v2.0, frozen after Phase A 2026-06-08)
 
-按 Four Dimensions 组织，所有因子在此统一注册。
-新增因子必须在这里定义，不允许散落在各处代码中。
+17 factors: 12 MAIN + 5 AUX (auxiliary/observation).
+Algorithm definitions verified by Phase A testing.
 
-每增加一个 Feature，必须回答:
-1. 它测量什么？（定义）
-2. 它属于哪个状态维度？（归属）
-3. 它和已有 Feature 区别是什么？（正交性）
-4. 它是否真的增加新的信息？（必要性）
+Each factor has:
+  name, name_cn, category(MAIN|AUX), dimension, formula, storage
 """
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
-
 @dataclass
-class FeatureDef:
-    """单个因子的完整定义"""
-    # ── 身份 ──
-    name: str                           # 英文标识符，如 RS20
-    name_cn: str                        # 中文名
-    dimension: str                      # rs / breadth / volatility / style / context
-    tier: int                           # 1=单资产计算 2=横截面聚合 3=需新数据源
+class FactorDef:
+    name: str
+    name_cn: str
+    category: str               # MAIN / AUX
+    dimension: str              # trend / momentum / volatility / breadth / volume / leadership / style
+    tier: int                   # 1=single-asset 2=cross-section 3=style/regime
+    description: str
+    formula: str
+    params: Dict = field(default_factory=dict)
+    dependencies: List[str] = field(default_factory=list)
+    storage: Optional[str] = None
+    status: str = 'active'
 
-    # ── 描述 ──
-    description: str                    # 因子含义说明
+FACTOR_REGISTRY: Dict[str, FactorDef] = {
 
-    # ── 计算 ──
-    compute_fn: str                     # calculator.py 中的函数名
-    params: Dict = field(default_factory=dict)    # 计算参数
-    dependencies: List[str] = field(default_factory=list)  # 依赖的原始字段
-    storage: Optional[str] = None       # 写入 market_daily_data 的字段名
+    # ════════════════════════════════════════════
+    # ① Trend / Momentum (5 factors: 3 MAIN + 2 AUX)
+    # ════════════════════════════════════════════
 
-    # ── 统计 ──
-    default_normalization: str = 'percentile'  # percentile / zscore / raw
-    default_window: int = 250           # 默认滚动窗口
-
-    # ── 展示 ──
-    display: Dict = field(default_factory=lambda: {
-        'color': '#666666',
-        'chart': 'line',        # line / bar / area
-        'y_axis': 'right',      # left / right / sub
-    })
-
-    # ── 状态 ──
-    status: str = 'active'      # active / pending / deprecated
-
-
-# ────────────────────────────────────────────
-# 全量因子注册表
-# ────────────────────────────────────────────
-
-FEATURE_REGISTRY: Dict[str, FeatureDef] = {
-
-    # ═══════════════════════════════════════════
-    # RS 维度 — 趋势方向与强度 (Tier 1)
-    # ═══════════════════════════════════════════
-
-    'RS20': FeatureDef(
-        name='RS20',
-        name_cn='20日相对强度',
-        dimension='rs',
-        tier=1,
-        description='标的相对于基准指数（中证全指）的20日滚动相对强弱。'
-                    '使用 rolling_mean_ratio 算法: 标的收盘/标的20日均值。',
-        compute_fn='calc_rs',
-        params={'lookback': 20, 'method': 'rolling_mean_ratio', 'benchmark': 'index.000985.SH'},
-        dependencies=['close'],
-        storage='rs20_cross',
-        display={'color': '#ff6600', 'chart': 'line', 'y_axis': 'right'},
-        default_normalization='percentile',
+    'RS20': FactorDef(
+        name='RS20', name_cn='20日相对强度',
+        category='MAIN', dimension='trend', tier=1,
+        description='(1+标的收益)/(1+基准收益)比值。>1=跑赢基准，<1=跑输。经典相对强度定义，非超额收益。',
+        formula='(P(t)/P(t-20)) / (BM(t)/BM(t-20))',
+        params={'lookback': 20, 'benchmark': 'index.000985.SH'},
+        dependencies=['close'], storage='rs20_cross',
     ),
 
-    'RS60': FeatureDef(
-        name='RS60',
-        name_cn='60日相对强度',
-        dimension='rs',
-        tier=1,
-        description='标的相对于基准指数的60日滚动相对强弱。',
-        compute_fn='calc_rs',
-        params={'lookback': 60, 'method': 'rolling_mean_ratio', 'benchmark': 'index.000985.SH'},
-        dependencies=['close'],
-        storage='rs60_cross',
-        display={'color': '#ff9933', 'chart': 'line', 'y_axis': 'right'},
-    ),
-
-    'RS_SLOPE': FeatureDef(
-        name='RS_SLOPE',
-        name_cn='RS斜率',
-        dimension='rs',
-        tier=1,
-        description='RS20的20日线性回归斜率。RS20值相同时，斜率方向指示趋势加速还是衰减。',
-        compute_fn='calc_rs_slope',
-        params={'lookback': 20, 'rs_source': 'RS20'},
-        dependencies=['rs20_cross'],
-        storage='rs_slope',
-        display={'color': '#cc4400', 'chart': 'line', 'y_axis': 'right'},
-        default_normalization='zscore',
-    ),
-
-    # ═══════════════════════════════════════════
-    # Breadth 维度 — 趋势是否扩散 (Tier 2)
-    # ═══════════════════════════════════════════
-
-    'ADV_DECLINE_RATIO': FeatureDef(
-        name='ADV_DECLINE_RATIO',
-        name_cn='涨跌比',
-        dimension='breadth',
-        tier=2,
-        description='全市场（申万31行业）中上涨行业数/下跌行业数。>1=普涨，<1=普跌。'
-                    '用于判断主升 vs 抱团（抱团时涨跌比低但指数涨）。',
-        compute_fn='calc_adv_decline_ratio',
-        params={},
-        dependencies=['close'],
-        display={'color': '#00b42a', 'chart': 'line', 'y_axis': 'left'},
-    ),
-
-    'INDUSTRY_DIFFUSION': FeatureDef(
-        name='INDUSTRY_DIFFUSION',
-        name_cn='行业扩散率',
-        dimension='breadth',
-        tier=2,
-        description='申万31行业中RS20>50的行业占比。0~1之间，越高说明趋势扩散越广。'
-                    '主升时>0.7，抱团时<0.4。',
-        compute_fn='calc_industry_diffusion',
-        params={'threshold': 50, 'rs_lookback': 20},
-        dependencies=['close'],
-        display={'color': '#69c0ff', 'chart': 'line', 'y_axis': 'left'},
-    ),
-
-    # ═══════════════════════════════════════════
-    # Volatility 维度 — 蓄势/释放 (Tier 2)
-    # ═══════════════════════════════════════════
-
-    'VOLATILITY_20D': FeatureDef(
-        name='VOLATILITY_20D',
-        name_cn='20日波动率',
-        dimension='volatility',
-        tier=2,
-        description='申万31行业平均的20日收益率标准差。'
-                    '波动率压缩→蓄势，波动率扩张→释放。混沌状态常伴随波动率低位。',
-        compute_fn='calc_market_volatility',
+    'MOM20': FactorDef(
+        name='MOM20', name_cn='20日时序动量',
+        category='MAIN', dimension='momentum', tier=1,
+        description='标的自身20日涨跌幅(不含基准对比)。和RS20的区别：MOM20是绝对回报，RS20是相对强度。',
+        formula='P(t)/P(t-20) - 1',
         params={'lookback': 20},
-        dependencies=['close'],
-        display={'color': '#722ed1', 'chart': 'line', 'y_axis': 'left'},
-        default_normalization='zscore',
+        dependencies=['close'], storage='time_momentum20',
     ),
 
-    # ═══════════════════════════════════════════
-    # Style Spread 维度 — 资金偏好 (Tier 2)
-    # ═══════════════════════════════════════════
-
-    'SMALL_CAP_SPREAD': FeatureDef(
-        name='SMALL_CAP_SPREAD',
-        name_cn='大小票剪刀差',
-        dimension='style',
-        tier=2,
-        description='中证2000(小盘)与沪深300(大盘)的RS20差值。'
-                    '正数=小票强，负数=大票强。抱团时差值显著为负。',
-        compute_fn='calc_small_cap_spread',
-        params={'small_cap': 'index.932000.SH', 'large_cap': 'index.000300.SH', 'lookback': 20},
-        dependencies=['close'],
-        display={'color': '#eb2f96', 'chart': 'line', 'y_axis': 'left'},
-        default_normalization='zscore',
-    ),
-
-    # ═══════════════════════════════════════════
-    # 辅助上下文 (Tier 1/2)
-    # ═══════════════════════════════════════════
-
-    'MOM20': FeatureDef(
-        name='MOM20',
-        name_cn='20日时序动量',
-        dimension='context',
-        tier=1,
-        description='标的自身20日涨跌幅（收盘价时序）。'
-                    '正数=上涨趋势，负数=下跌趋势。与RS20的区别: RS20是相对基准，MOM20是绝对自身。',
-        compute_fn='calc_time_momentum',
-        params={'lookback': 20},
-        dependencies=['close'],
-        storage='time_momentum20',
-        display={'color': '#165dff', 'chart': 'line', 'y_axis': 'right'},
-    ),
-
-    'MOM60': FeatureDef(
-        name='MOM60',
-        name_cn='60日时序动量',
-        dimension='context',
-        tier=1,
+    'MOM60': FactorDef(
+        name='MOM60', name_cn='60日时序动量',
+        category='MAIN', dimension='momentum', tier=1,
         description='标的自身60日涨跌幅。',
-        compute_fn='calc_time_momentum',
+        formula='P(t)/P(t-60) - 1',
         params={'lookback': 60},
-        dependencies=['close'],
-        storage='time_momentum60',
-        display={'color': '#4096ff', 'chart': 'line', 'y_axis': 'right'},
+        dependencies=['close'], storage='time_momentum60',
     ),
 
-    'TREND_STR': FeatureDef(
-        name='TREND_STR',
-        name_cn='趋势综合评分',
-        dimension='context',
-        tier=1,
-        description='RS20、MOM20、RS斜率的综合评分，0~100。'
-                    '用于快速判断趋势置信度。',
-        compute_fn='calc_trend_strength',
-        params={},
-        dependencies=['rs20_cross', 'time_momentum20'],
-        storage='trend_strength',
-        display={'color': '#52c41a', 'chart': 'line', 'y_axis': 'right'},
-    ),
-
-    'PE_PERCENTILE': FeatureDef(
-        name='PE_PERCENTILE',
-        name_cn='PE历史百分位',
-        dimension='context',
-        tier=1,
-        description='滚动市盈率在历史250日的百分位。95%=极度高估，5%=极度低估。'
-                    '绝对PE无意义，百分位才有结构意义。',
-        compute_fn='calc_percentile',
-        params={'field': 'pe_ttm', 'window': 250},
-        dependencies=['pe_ttm'],
-        storage='pe_ttm_pct',
-        display={'color': '#fa8c16', 'chart': 'line', 'y_axis': 'left'},
-    ),
-
-    'PE_CHANGE_RATE': FeatureDef(
-        name='PE_CHANGE_RATE',
-        name_cn='PE扩张速度',
-        dimension='context',
-        tier=1,
-        description='PE_TTM的20日变化率。快速扩张可能预示估值泡沫。',
-        compute_fn='calc_change_rate',
-        params={'field': 'pe_ttm', 'lookback': 20},
-        dependencies=['pe_ttm'],
-        storage='pe_change_rate',
-        display={'color': '#d4380d', 'chart': 'line', 'y_axis': 'left'},
-        default_normalization='zscore',
-    ),
-
-    'DIV_YIELD': FeatureDef(
-        name='DIV_YIELD',
-        name_cn='股息率',
-        dimension='context',
-        tier=1,
-        description='股息率原始值。红利风格判定用。',
-        compute_fn='calc_dividend_yield_percentile',
-        params={'window': 250},
-        dependencies=['dividend_yield'],
-        storage='dividend_yield',
-        display={'color': '#237804', 'chart': 'line', 'y_axis': 'left'},
-    ),
-
-    'PRICE_VOL_DIVERGENCE': FeatureDef(
-        name='PRICE_VOL_DIVERGENCE',
-        name_cn='量价背离',
-        dimension='context',
-        tier=2,
-        description='价格方向与成交量方向的背离度。'
-                    '放量滞涨=顶背离（风险信号），缩量下跌=底背离（机会信号）。',
-        compute_fn='calc_price_vol_divergence',
+    'ACCEL': FactorDef(
+        name='ACCEL', name_cn='动量加速度',
+        category='MAIN', dimension='momentum', tier=1,
+        description='MOM20的5日差分。正值=动量加速，负值=动量减速。拐点敏感。',
+        formula='MOM20(t) - MOM20(t-5)',
         params={'lookback': 5},
-        dependencies=['close', 'volume'],
-        storage='price_vol_divergence',
-        display={'color': '#f5222d', 'chart': 'line', 'y_axis': 'left'},
-        default_normalization='zscore',
+        dependencies=['close'], storage=None,  # 实时计算
     ),
 
-    'BREAKOUT': FeatureDef(
-        name='BREAKOUT',
-        name_cn='突破强度',
-        dimension='context',
-        tier=1,
-        description='收盘价突破20日均线的幅度。正数=向上突破，负数=向下突破。',
-        compute_fn='calc_breakout',
+    'RS60': FactorDef(
+        name='RS60', name_cn='60日相对强度',
+        category='AUX', dimension='trend', tier=1,
+        description='60日比值的相对强度。和RS20同源，长周期参考。',
+        formula='(P(t)/P(t-60)) / (BM(t)/BM(t-60))',
+        params={'lookback': 60, 'benchmark': 'index.000985.SH'},
+        dependencies=['close'], storage='rs60_cross',
+    ),
+
+    # ════════════════════════════════════════════
+    # ② Volatility (2 factors: 1 MAIN + 1 AUX)
+    # ════════════════════════════════════════════
+
+    'VOL20': FactorDef(
+        name='VOL20', name_cn='20日波动率',
+        category='MAIN', dimension='volatility', tier=1,
+        description='每个行业独立计算的20日收益率标准差(非市场平均)。高vol=剧烈波动，低vol=蓄势。',
+        formula='std(ret[t-20:t])，ddof=1',
         params={'lookback': 20},
-        dependencies=['close'],
-        storage='breakout_strength',
-        display={'color': '#ff4d4f', 'chart': 'line', 'y_axis': 'right'},
+        dependencies=['close'], storage='volatility_20d',
+    ),
+
+    'VOL_RATIO': FactorDef(
+        name='VOL_RATIO', name_cn='波动率比值',
+        category='AUX', dimension='volatility', tier=1,
+        description='当前Vol20 / 20日前Vol20。>1.2=波动扩张，<0.8=波动压缩，连续值不做二值化。',
+        formula='Vol20(t) / Vol20(t-20)',
+        params={'lookback': 20},
+        dependencies=['close'], storage=None,  # 实时计算
+    ),
+
+    # ════════════════════════════════════════════
+    # ③ Breadth / Diffusion (3 factors: 2 MAIN + 1 AUX)
+    # ════════════════════════════════════════════
+
+    'PART_RATE': FactorDef(
+        name='PART_RATE', name_cn='行业参与度',
+        category='MAIN', dimension='breadth', tier=2,
+        description='行业内above MA20股票比例。越高说明行业参与度越广。',
+        formula='above_ma20_ratio（DB字段直读）',
+        dependencies=['close'], storage='above_ma20_ratio',
+    ),
+
+    'BREADTH_CHG': FactorDef(
+        name='BREADTH_CHG', name_cn='广度变化率',
+        category='MAIN', dimension='breadth', tier=2,
+        description='above_ma20_ratio的5日差分。连续正数=广度扩张，连续负数=广度收缩。最稳定的正向信号源。',
+        formula='above_ma20_ratio(t) - above_ma20_ratio(t-5)',
+        dependencies=['above_ma20_ratio'], storage=None,  # 实时计算
+    ),
+
+    'NEW_HIGH': FactorDef(
+        name='NEW_HIGH', name_cn='20日新高比例',
+        category='AUX', dimension='breadth', tier=2,
+        description='行业内创20日新高的股票比例。极端值(>0.3或<0.05)有参考价值。',
+        formula='new_high_20d_ratio（DB字段直读）',
+        dependencies=['close'], storage='new_high_20d_ratio',
+    ),
+
+    # ════════════════════════════════════════════
+    # ④ Price-Volume (2 factors: 1 MAIN + 1 AUX)
+    # ════════════════════════════════════════════
+
+    'AMT_RATIO': FactorDef(
+        name='AMT_RATIO', name_cn='量比',
+        category='MAIN', dimension='volume', tier=1,
+        description='当日成交额/20日均成交额。>1=放量，<1=缩量。极端市场(股灾/反弹)中IC最高。',
+        formula='amount(t) / SMA20(amount)',
+        dependencies=['amount'], storage='amount_ratio',
+    ),
+
+    'VOL_BKOUT': FactorDef(
+        name='VOL_BKOUT', name_cn='放量加速度',
+        category='AUX', dimension='volume', tier=1,
+        description='量比减去5日量比均值。区分持续温和放量和脉冲式放量。连续值不做阈值触发。',
+        formula='AmtRatio(t) - SMA5(AmtRatio)',
+        dependencies=['amount_ratio'], storage=None,  # 实时计算
+    ),
+
+    # ════════════════════════════════════════════
+    # ⑤ Leadership / Structure (3 factors: 2 MAIN + 1 AUX)
+    # ════════════════════════════════════════════
+
+    'CR3': FactorDef(
+        name='CR3', name_cn='Top3成交额集中度',
+        category='MAIN', dimension='leadership', tier=2,
+        description='成交额Top3行业之和/全部行业之和。全场最强因子(Avg|IC|=0.232)。集中度越高=资金越聚焦。',
+        formula='sum(Top3_amount) / sum(all_sector_amount)',
+        dependencies=['amount'], storage=None,  # 实时计算
+    ),
+
+    'CR5': FactorDef(
+        name='CR5', name_cn='Top5成交额集中度',
+        category='MAIN', dimension='leadership', tier=2,
+        description='成交额Top5行业之和/全部行业之和。与CR3互补使用。',
+        formula='sum(Top5_amount) / sum(all_sector_amount)',
+        dependencies=['amount'], storage=None,  # 实时计算
+    ),
+
+    'TOP_DISP': FactorDef(
+        name='TOP_DISP', name_cn='领导力强度',
+        category='AUX', dimension='leadership', tier=2,
+        description='Top3行业涨幅均值 - Bottom3行业涨幅均值。高值=龙头带领(集中度高)，低值=散乱(无主线)。',
+        formula='mean(Top3_ret) - mean(Bottom3_ret)',
+        dependencies=['close'], storage=None,  # 实时计算
+    ),
+
+    # ════════════════════════════════════════════
+    # ⑥ Style (2 MAIN factors — Layer 4预备)
+    # ════════════════════════════════════════════
+
+    'SC_SPREAD': FactorDef(
+        name='SC_SPREAD', name_cn='大小票剪刀差',
+        category='MAIN', dimension='style', tier=3,
+        description='中证2000(小盘)RS20 - 沪深300(大盘)RS20。正值=小票强，负值=大票强。Layer4市场风格变量。',
+        formula='index.932000.SH ret20 - index.000300.SH ret20',
+        params={'lookback': 20},
+        dependencies=['close'], storage='small_cap_spread',
+    ),
+
+    'ADV_DECL': FactorDef(
+        name='ADV_DECL', name_cn='行业涨跌比',
+        category='MAIN', dimension='style', tier=2,
+        description='30个申万行业中上涨家数/有数据行业总数。行业级涨跌比(非全市场指数级)。',
+        formula='sector_adv_count / sector_total_valid',
+        dependencies=['close'], storage='adv_decline_ratio',
     ),
 }
 
+# ════════════════════════════════════════════
+# 查询辅助
+# ════════════════════════════════════════════
 
-# ────────────────────────────────────────────
-# 辅助工具
-# ────────────────────────────────────────────
+def get_by_category(cat: str) -> Dict[str, FactorDef]:
+    """按MAIN/AUX获取"""
+    return {k: v for k, v in FACTOR_REGISTRY.items() if v.category == cat}
 
-def get_features_by_dimension(dimension: str) -> Dict[str, FeatureDef]:
-    """按维度获取所有因子"""
-    return {k: v for k, v in FEATURE_REGISTRY.items() if v.dimension == dimension}
+def get_by_dimension(dim: str) -> Dict[str, FactorDef]:
+    """按维度获取"""
+    return {k: v for k, v in FACTOR_REGISTRY.items() if v.dimension == dim}
 
+def list_factors() -> List[Dict]:
+    """返回简洁因子列表"""
+    return [{'name': f.name, 'name_cn': f.name_cn, 'category': f.category,
+             'dimension': f.dimension, 'formula': f.formula, 'status': f.status}
+            for f in FACTOR_REGISTRY.values() if f.status == 'active']
 
-def get_features_by_tier(tier: int) -> Dict[str, FeatureDef]:
-    """按 Tier 获取所有因子"""
-    return {k: v for k, v in FEATURE_REGISTRY.items() if v.tier == tier}
+def get_main_factors() -> List[str]:
+    return [k for k, v in FACTOR_REGISTRY.items() if v.category == 'MAIN']
 
-
-def get_active_features() -> Dict[str, FeatureDef]:
-    """获取所有激活状态的因子"""
-    return {k: v for k, v in FEATURE_REGISTRY.items() if v.status == 'active'}
-
-
-def list_features() -> List[Dict]:
-    """返回简洁的因子列表（给前端用）"""
-    result = []
-    for name, f in FEATURE_REGISTRY.items():
-        if f.status != 'active':
-            continue
-        result.append({
-            'name': name,
-            'name_cn': f.name_cn,
-            'dimension': f.dimension,
-            'tier': f.tier,
-            'description': f.description,
-            'default_normalization': f.default_normalization,
-            'display': f.display,
-        })
-    return result
+def get_aux_factors() -> List[str]:
+    return [k for k, v in FACTOR_REGISTRY.items() if v.category == 'AUX']

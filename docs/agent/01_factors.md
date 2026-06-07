@@ -1,6 +1,11 @@
-# 01_factors.md — Factor And Backtest Rules
+# 01_factors.md — Factor Definitions (v2.0)
 
 > Read this for factor implementation, Layer 2/3 boundaries, or backtest decisions.
+>
+> This is the **frozen** version after Phase A completion.
+> Do not modify factor definitions here without updating registry.py and calculator.py simultaneously.
+
+---
 
 ## Layer Boundary
 
@@ -9,67 +14,85 @@ Layer 3 combines multiple Layer 2 features into structure evidence.
 
 Do not make a Layer 2 feature claim a final market state by itself.
 
-## Registry
+## Layer 2 Factor Registry (17 factors)
 
-Feature definitions live in:
+12 main factors + 5 auxiliary observation factors.
+All algorithms confirmed via Phase A testing (2026-06-08).
 
-```text
-backend/research/features/registry.py
-```
+### ① Trend / Momentum (3 main + 2 auxiliary = 5)
 
-Factor calculation lives in:
+| Factor | Category | Definition | Storage | Phase A Avg\|IC\| |
+|:-------|:---------|:-----------|:--------|:----------------:|
+| **RS20** | MAIN | `(P(t)/P(t-20))/(BM(t)/BM(t-20))` ratio, NOT excess | `rs20_cross` | 0.143 |
+| **RS60** | AUX | `(P(t)/P(t-60))/(BM(t)/BM(t-60))` ratio | `rs60_cross` | 0.112 |
+| **MOM20** | MAIN | `P(t)/P(t-20) - 1` raw return | `time_momentum20` | 0.188 |
+| **MOM60** | MAIN | `P(t)/P(t-60) - 1` raw return | `time_momentum60` | 0.158 |
+| **Accel** | MAIN | `MOM20(t) - MOM20(t-5)` unsmoothed momentum change | — (derived) | 0.177 |
 
-```text
-backend/research/features/calculator.py
-```
+### ② Volatility (1 main + 2 auxiliary = 3)
 
-Prefer adding metadata to existing `FeatureDef` rather than replacing the registry with a complex hierarchy.
+| Factor | Category | Definition | Storage | Phase A Avg\|IC\| |
+|:-------|:---------|:-----------|:--------|:----------------:|
+| **Vol20** | MAIN | `std(ret[t-20:t])` per-sector independently | `volatility_20d` | 0.154 |
+| **ATR20** | ❌ not registered | Replaced by Vol20 (higher IC) | — | 0.089 |
+| **VolRatio** | AUX | `Vol20(t)/Vol20(t-20)` expansion/compression continuous | — (derived) | 0.114 |
 
-Useful metadata candidates:
+### ③ Breadth / Diffusion (2 main + 1 auxiliary = 3)
 
-- `family`: relative / breadth / structure / context
-- `scope`: asset / sector / market / cross_sector
-- `layer`: 2 / 3
-- `structure_role`: trend / participation / confirmation / risk / style
+| Factor | Category | Definition | Storage | Phase A Avg\|IC\| |
+|:-------|:---------|:-----------|:--------|:----------------:|
+| **PartRate** | MAIN | `above_ma20_ratio` participation rate | `above_ma20_ratio` | 0.147 |
+| **BreadthChg** | MAIN | `above_ma20_ratio(t) - above_ma20_ratio(t-5)` directional slope | — (derived) | 0.140 |
+| **NewHigh** | AUX | `new_high_20d_ratio` absolute level | `new_high_20d_ratio` | 0.117 |
 
-Layer 3 combination rules should live under:
+❌ Not registered: `NHChange` (0.079, too weak)
 
-```text
-backend/research/structures/
-```
+### ④ Price-Volume (1 main + 1 auxiliary = 2)
 
-## Current Factor Families
+| Factor | Category | Definition | Storage | Phase A Avg\|IC\| |
+|:-------|:---------|:-----------|:--------|:----------------:|
+| **AmtRatio** | MAIN | `amount(t)/SMA20(amount)` volume ratio | `amount_ratio` | 0.128 |
+| **VolBkOut** | AUX | `AmtRatio(t) - SMA5(AmtRatio)` volume acceleration | — (derived) | 0.122 |
 
-| Family | Examples | Price/Data Basis |
-|--------|----------|------------------|
-| Relative strength | `rs20_cross`, `rs60_cross`, `rs_slope` | `close_hfq` vs `index.000985.SH` |
-| Momentum | `time_momentum20`, `time_momentum60`, `trend_strength` | `close_hfq` |
-| Breadth | `above_ma20_ratio`, `above_ma60_ratio`, `new_high_20d_ratio`, `rs_positive_ratio` | stock `close_hfq`, aggregated to sector rows |
-| Emotion | `limit_up_count`, `limit_down_count`, `market_adv_ratio` | raw pct change / limit flags |
-| Volume/amount | `volume_ratio`, `amount_ratio`, `price_vol_divergence` | raw volume/amount + adjusted price direction |
-| Valuation/context | `pe_ttm_pct`, `pe_change_rate`, `dividend_yield_pct` | valuation fields |
+❌ Not registered: `PVD` (0.085, too sparse — 6/13 phases all zero)
 
-## Current Scope Decision
+### ⑤ Leadership / Structure (2 main + 1 auxiliary = 3)
 
-The current registered factor pool is enough for the first market-state and
-main-line sector research loop. Do not add external factor libraries by default.
+| Factor | Category | Definition | Storage | Phase A Avg\|IC\| |
+|:-------|:---------|:-----------|:--------|:----------------:|
+| **CR3** | MAIN | `sum(Top3_amt)/sum(all_amt)` cross-sector concentration | — (derived) | **0.232** |
+| **CR5** | MAIN | `sum(Top5_amt)/sum(all_amt)` cross-sector concentration | — (derived) | 0.205 |
+| **TopDisp** | AUX | `mean(Top3_ret) - mean(Bottom3_ret)` leadership strength | — (derived) | 0.150 |
 
-The near-term bottleneck is data readiness and second-pass aggregation:
+❌ Not registered: `ReturnSkew` (top3-bottom3 equivalent, covered by TopDisp)
 
-- complete stock-to-sector mapping for all 30 Shenwan sectors
-- market advance / decline and limit-up / limit-down aggregation
-- sector internal breadth aggregation
-- market and sector amount-strength aggregation
+### ⑥ Style (MAIN — Layer 4预备)
 
-Stock-level data is mainly used for aggregation. The first version does not need
-to calculate `RS20`, `MOM20`, or trend scores for every stock unless a later
-experiment explicitly tests stock-level relative strength.
+| Factor | Category | Definition | Storage | Phase A Avg\|IC\| |
+|:-------|:---------|:-----------|:--------|:----------------:|
+| **SCSpread** | MAIN | `index.932000.SH ret20 - index.000300.SH ret20` small vs large cap | `small_cap_spread` | 0.205 |
+| **AdvDecl** | MAIN | `adv_count_30sectors / total_valid` industry-level advance ratio | `adv_decline_ratio` | 0.181 |
 
-Detailed scope note:
+---
 
-```text
-docs/research/factor_scope_v1.md
-```
+## Factor Families
+
+| Family | Factors | Data Basis |
+|--------|---------|------------|
+| Relative Strength | RS20, RS60 | `close` vs `index.000985.SH` |
+| Momentum | MOM20, MOM60, Accel | `close` |
+| Volatility | Vol20, VolRatio | `close` (per-sector) |
+| Breadth | PartRate, BreadthChg, NewHigh | `above_ma20_ratio`, `new_high_20d_ratio` |
+| Volume | AmtRatio, VolBkOut | `amount`, `amount_ratio` |
+| Leadership | CR3, CR5, TopDisp | `amount` (cross-sector) |
+| Style | SCSpread, AdvDecl | index + sector close |
+
+## Data Price Basis
+
+- **All sector and benchmark factors use `close`** (exchange-calculated index points, no adjustment needed).
+- `close_hfq` is for stock-level use only. Not used for sector/index factors.
+
+---
 
 ## Backtest Rules
 
@@ -78,74 +101,13 @@ docs/research/factor_scope_v1.md
 - Prefer one main variable change per experiment.
 - Record data range, asset pool, rebalance frequency, holding period, benchmark, and transaction-cost assumption.
 
-## Forbidden Path
+---
 
-Vectorized sector behavior scoring is not trusted.
+## W1/W2/W3 (Sector Leadership v1 — Retired)
 
-Reason:
+W1/W2/W3 is a **cross-class composite** (mixing trend + volume + volatility). Phase A confirmed this design is flawed — component signals cancel each other (RS20 is negative in 5/13 phases). The system should combine Layer 2 factors at Layer 3 (Structure), never inside a single composite.
 
-```text
-Different sector calendars + pivot alignment changed window semantics.
-Vectorized vs loop match rate was only 34.7%.
-```
-
-Use loop-based behavior scoring only:
-
-```text
-calc_sector_rolling_score()
-```
-
-Do not use `--daily` results from `sector_behavior_score.py` as research evidence.
-
-## W1/W2/W3 Behavior Score (Sector Leadership v1)
-
-### Structure
-
-The behavior score divides the past 90 trading days into three 20-day windows:
-
-```
-T-90         T-60    T-40    T-20       T
- │            │       │       │          │
- ─────┴────────┴───────┴───────┴──────────┴───
-              │       │       │          │
-              W1      W2      W3         eval
-           放量震荡   缩量洗盘  初升试探
-```
-
-Each window scores 0-3 sub-points, total 0-9.
-
-### Two Information Layers (discovered in EXP-006)
-
-| Layer | Source | Answers | Use |
-|-------|--------|---------|-----|
-| `Total Score` | W1+W2+W3 | 是否值得关注 (worth watching?) | Ranking across sectors |
-| `Delta = W2 - W3` | W2 sub-score − W3 sub-score | 处于什么阶段 (lifecycle stage?) | Position explanation (EXP-007 confirmed: explanatory, not a trading filter) |
-
-### Delta Interpretation
-
-| Delta Range | Meaning | Lifecycle Curve |
-|:----------:|---------|:---------------:|
-| ≥ 2 (Wash >> Launch) | 洗盘充分，启动不足 | −1.2% @10D → +4.9% @40D (先弱后强) |
-| 0.5~2 (Wash > Launch) | 洗盘略强 | +1.1% @20D (适中) |
-| −0.5~0.5 (Balanced) | 整理和启动均衡 | +2.4% @20D, 60.4% win (最稳健) |
-| −2~−0.5 (Launch > Wash) | 已启动但整理不足 | +0.3% @20D, 46.6% win (短期惯性, 衰减) |
-| ≤ −2 (Launch >> Wash) | 已明显启动, 追高 | +1.2% @20D, 40.9% win (短期好, 后继弱) |
-
-### Current Baseline (Variant D)
-
-```
-MAIN_UP_CONFIRMED → TOP 3 equal weight
-REBOUND           → TOP 2 equal weight
-CHAOS             → TOP 1 (total score ≥ 6)
-CROWDING          → TOP 1 equal weight
-RETREAT           → no holdings
-```
-
-Performance: 253 windows (2005~2026), +985.3% return, +340.6% excess vs `index.000985.SH`, −45.9% maxDD.
-
-**Key validation:** CHAOS contributes 46.4% of total return — the framework's value lies in identifying local themes during chaotic markets, not amplifying bull runs.
-
-### Forbidden Path
-
-- Delta(W2-W3) is NOT a trading filter. EXP-007 tested State × Lifecycle fusion; both variants underperformed D. Delta explains lifecycle position in hindsight only.
-- Despite positive excess, Top1 hit rate (~3.5%) is near random. The system has direction filtering ability (Top3 coverage 3× random) but not champion prediction.
+**Current baseline (reference only):**
+- EXP-003 Variant D: MAIN_UP→TOP3, CHAOS→TOP1(≥6), RETREAT→空仓
+- +985.3% return, +340.6% excess, −45.9% maxDD (253 windows, 2005~2026)
+- Held as reference baseline for Phase C comparison

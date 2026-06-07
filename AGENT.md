@@ -35,7 +35,8 @@ Out of scope for this repo for now:
 
 | Task | Read |
 |------|------|
-| Current priority / next work | `PLAN.md`, then `docs/research/MEMORY.md` |
+| **Current priority / next work** | `PLAN.md`, then `docs/research/MEMORY.md` |
+| **Phase A master plan (experiment instruction)** | `docs/agent/06_phase_a_master_plan.md` |
 | Data fields, sources, adjustment policy | `docs/agent/00_data.md` |
 | Factor definitions, Layer 2/3 boundaries, backtest rules | `docs/agent/01_factors.md` |
 | Experiment workflow and known conclusions | `docs/agent/02_experiments.md`, then `docs/research/INDEX.md` / `LESSONS.md` |
@@ -52,9 +53,12 @@ task specifically needs that detail.
 # Factor calculation
 python3 -m backend.research.features.calculator
 
-# Trusted behavior-score experiments
-python3 backend/research/analysis/sector_behavior_score.py --rolling
-python3 backend/research/analysis/sector_behavior_score.py --continuous
+# Phase A — Factor semantic mapping
+python3 backend/research/analysis/phase_A_class01_trend.py
+python3 backend/research/analysis/phase_A_class02_volatility.py
+python3 backend/research/analysis/phase_A_class03_breadth.py
+python3 backend/research/analysis/phase_A_class04_pricevol_leadership.py
+python3 backend/research/analysis/phase_A_class05_style.py
 
 # Historical sector leadership analysis
 python3 backend/research/analysis/sector_leadership.py
