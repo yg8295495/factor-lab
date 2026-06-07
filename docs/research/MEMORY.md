@@ -31,6 +31,7 @@
 | 2026-06-05 | EXP-007 / State×Lifecycle融合 | experiment-result | Delta作为实时选择过滤器不成立。E_state_lifecycle(377.8%) / E_sens_hard(633.1%) 均不如D(985.3%)。行业层研究收口。 | `docs/research/experiments/EXP-007-state-lifecycle-fusion.md` | complete |
 | 2026-06-05 | **Sector Leadership v1 整体收口** | milestone | ✅ 行业行为评分层从发现到融合全部闭环。EXP-002→003→004→006→007 构成完整研究链。当前基线 EXP-003 Variant D（+985%, +341%超额）。 | `PLAN.md` | complete |
 | 2026-06-08 | **Phase A 因子语义映射完成** | milestone | ✅ 21因子×13阶段IC测试全部完成。17因子注册入库(12MAIN+5AUX)。CR3全场最强(0.232)。registry/calculator v2.0冻结。 | `docs/agent/06_phase_a_master_plan.md` | complete |
+| 2026-06-08 | **Phase B 正交性分析完成** | milestone | ✅ 17因子×13阶段相关矩阵。5个冗余对(CR3/CR5,RS20/Mom20等)、5个因子族、10个互补对。Phase C候选组合确定。 | `backend/research/analysis/output/phase_B_orthogonality.json` | complete |
 ## Type Guide
 
 - `data-audit`: data coverage, field quality, source checks, schema readiness.
