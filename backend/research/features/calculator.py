@@ -1,6 +1,9 @@
 """
 Factor Calculator (v2.0) — 17 factors from registry.py
 
+⚠️ 本文件硬编码 BM = 'index.000985.SH'（旧基准）。
+如需在 801003 上使用，改 BM 后重跑。完成后删除本行。
+
 算法已通过 Phase A 交叉验证 (2026-06-08)。
 所有 RS/Volatility 使用逐行业 for 循环，不使用矩阵预计算。
 """

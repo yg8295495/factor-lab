@@ -23,6 +23,6 @@ COLLECTOR_CONFIG = {
 # 因子计算默认参数
 FEATURE_DEFAULTS = {
     "rolling_window": 250,       # 滚动窗口（交易日 ≈ 1年）
-    "rs_benchmark": "index.000985.CSI",  # 中证全指
+    "rs_benchmark": "index.801003.SW",  # 申万Ａ指（2026-06-09 切换）
     "momentum_periods": [5, 20, 60],
 }

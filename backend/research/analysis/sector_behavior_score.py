@@ -1704,7 +1704,7 @@ if __name__ == '__main__':
         continuous_rolling()
     elif '--daily' in sys.argv:
         print('🚫 --daily 入口指向向量化版（已废弃），结果不准确。如需滚动回测请用 --rolling 或 --continuous')
-        print('  向量化版与循环版匹配率仅 34.7%，详见 test_vector_vs_loop.py')
+        print('  向量化版与循环版匹配率仅 34.7%（结论已记录，验证脚本已清理）')
         sys.exit(1)
     else:
         backtest()

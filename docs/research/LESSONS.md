@@ -31,3 +31,4 @@
 - **What orthogonal information sources can improve main-line identification?** — Sector breadth change rate, concentration, ETF flow, margin, valuation percentile, news coverage — all unstudied.
 - **How long does a main line persist?** — Sector lifecycle ≠ main-line lifecycle.
 - **What is the market macro-state?** — PE percentile, ERP, risk premium — all blank.
+

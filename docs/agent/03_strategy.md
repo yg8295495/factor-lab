@@ -26,7 +26,7 @@ factor combination -> ranked signal -> rolling validation
 Default benchmark:
 
 ```text
-index.000985.SH
+index.801003.SW  # 申万Ａ指 (全A)
 ```
 
 Default evaluation should report:

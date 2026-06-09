@@ -79,7 +79,7 @@ All algorithms confirmed via Phase A testing (2026-06-08).
 
 | Family | Factors | Data Basis |
 |--------|---------|------------|
-| Relative Strength | RS20, RS60 | `close` vs `index.000985.SH` |
+| Relative Strength | RS20, RS60 | `close` vs `index.801003.SW` |
 | Momentum | MOM20, MOM60, Accel | `close` |
 | Volatility | Vol20, VolRatio | `close` (per-sector) |
 | Breadth | PartRate, BreadthChg, NewHigh | `above_ma20_ratio`, `new_high_20d_ratio` |
@@ -97,7 +97,7 @@ All algorithms confirmed via Phase A testing (2026-06-08).
 ## Backtest Rules
 
 - Use rolling evaluation only.
-- Default comparison is excess return vs `index.000985.SH`.
+- Default comparison is excess return vs `index.801003.SW` (申万Ａ指).
 - Prefer one main variable change per experiment.
 - Record data range, asset pool, rebalance frequency, holding period, benchmark, and transaction-cost assumption.
 

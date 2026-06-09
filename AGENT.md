@@ -24,12 +24,13 @@ Out of scope for this repo for now:
 ## Hard Rules
 
 - Use the semi-wide SQLite design. Prefer appending daily fields to `market_daily_data`; do not split tables unless the data shape truly requires it.
-- Benchmark symbol is `index.000985.SH`.
+- Benchmark symbol is `index.801003.SW`（申万Ａ指，唯一真正的全A指数）。
+- 801003 替代了此前误用的 801001（实为申万50，仅50只大盘股）。
+- 随身版数据库: `data/quant_engine_base.db`（~64MB，不含个股行，适合移动研究）。
 - Vectorized sector behavior scoring is forbidden for research conclusions.
 - Backtests must use rolling evaluation. Static hit rate is not accepted as evidence.
 - Keep experiments narrow: change one main variable, run loop-based rolling backtest, record the result.
 - Do not read `docs/archive/` or `docs/human/` unless the user explicitly asks or the current task needs it.
-- `codex.md` is deep background from a prior alignment conversation; do not read it by default.
 
 ## What To Read
 
@@ -49,7 +50,28 @@ task specifically needs that detail.
 
 ## Core Commands
 
+### 每日更新（首选）
 ```bash
+# 更新 base.db（随身版）— 只更新801003 K线+派生字段，最快
+python3 backend/collectors/daily_update.py --db data/quant_engine_base.db --only-benchmark
+
+# 更新 base.db 全部（含行业+宏观）
+python3 backend/collectors/daily_update.py --db data/quant_engine_base.db
+
+# 更新 full.db 全部（含个股聚合重算）
+python3 backend/collectors/daily_update.py
+```
+
+### 一次性/初始化
+```bash
+python3 backend/collectors/build_sector_mapping.py     # 行业映射
+python3 backend/collectors/compute_stock_fields.py     # 个股涨跌幅/涨跌停
+python3 backend/collectors/aggregate_sector_breadth.py # 行业内部宽度
+python3 backend/collectors/sw_daily.py                 # 行业日线采集（全量）
+python3 backend/collectors/tickflow_collector.py       # 个股日线采集（全量）
+python3 backend/collectors/fetch_macro_data.py         # 宏观数据(国债/两融)
+```
+
 # Factor calculation
 python3 -m backend.research.features.calculator
 
@@ -66,6 +88,13 @@ python3 backend/research/analysis/sector_leadership.py
 # Local app
 ./start.sh
 ```
+
+## Databases
+
+| 文件 | 大小 | 说明 |
+|:----|:----:|:-----|
+| `data/quant_engine.db` | ~2.8GB | 完整版：含全部个股行，台式研究用 |
+| `data/quant_engine_base.db` | ~64MB | 随身版：仅行业+指数+宏观+801003，无个股行 |
 
 ## Documentation Workflow
 

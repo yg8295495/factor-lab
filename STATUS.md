@@ -24,13 +24,13 @@
 | # | 任务 | 状态 | 关键指标 | 脚本 |
 |:-:|:-----|:----:|:---------|:-----|
 | 1 | stock-to-sector 映射 | ✅ | 5148/5478 股 (94%)，31 行业全覆盖 | `build_sector_mapping.py` |
-| 2 | 个股 pct_chg_raw / 涨跌停 | ✅ | 14,980,924 行 (99.9%)，涨停 24.9 万行 | `compute_stock_fields.py` |
-| 3 | 市场情绪 → index.000985.SH | ✅ | 5189/5191 行 (2004-12 ~ 2026-05) | `aggregate_market_emotion.py` |
-| 4 | 行业内部宽度 → 30 行业 | ✅ | above_ma20/ma60/new_high_20d 全 30 行业 | `aggregate_sector_breadth.py` |
-| 5 | amount_ratio → sector + 基准 | ✅ | sector 99.6%，benchmark 99.6% | `compute_amount_ratio.py` |
-| 6 | Schema 清理 | ✅ | 回滚 4 个未授权 ALTER TABLE 列 | — |
+| 2 | 个股 pct_chg_raw / 涨跌停 | ✅ | 14,980,924 行 (99.9%) | `compute_stock_fields.py` |
+| 3 | 行业内部宽度 → 30 行业 | ✅ | above_ma20/ma60/new_high_20d 全 30 行业 | `aggregate_sector_breadth.py` |
+| 4 | 申万Ａ指(801003) K线+PE/PB | ✅ | 6385行, 1999-12-30~2026-06-08, PE覆盖率99.9% | `daily_update.py`（增量） |
+| 5 | 801003 派生字段回填 | ✅ | amount_ratio/volatility/pe_ttm_pct/新高比/涨跌家数全量覆盖 | `daily_update.py`（增量） |
+| 6 | 行业额比 | ✅ | 30个行业 amount_ratio 覆盖99.6% | `daily_update.py`（增量） |
 
-**数据覆盖：** 5191 个交易日（1990-01 ~ 2026-05），30 个申万一级行业指数，约 5200 只个股日线。
+**数据覆盖：** 6385 个交易日（1999-12-30 ~ 2026-06-08），30 个申万一级行业指数。**基准 = `index.801003.SW`（申万Ａ指，全A）**。此前误用的 801001（申万50）已修正身份。
 
 ---
 
@@ -129,6 +129,20 @@ RETREAT if:
 
 **EXP-003 Variant D (CHAOS ≥ 6)** — 已验证为「主线行业识别 v0」的基础框架。
 
+### 2026-06-09：基准从 801001（申万50）切换到 801003（申万Ａ指）
+
+| 事项 | 内容 |
+|:----|:------|
+| 发现 | 801001 实为申万50（50只大盘股），不是全A |
+| 新基准 | `index.801003.SW` — 申万Ａ指（~4119只成分股，成交额占比100%） |
+| 数据采集 | 6385行K线，PE/PB 6376行（1999-12-30~2026-06-08） |
+| 派生字段 | amount_ratio/volatility/pe_ttm_pct 全部回填 |
+| 全局聚合 | 新高比例+涨跌家数从全市场个股聚合写入 |
+| 废弃脚本 | add_801001.py / backfill_801001_fields.py / backfill_new_high_ratio.py / aggregate_market_emotion.py / compute_amount_ratio.py — 已删除 |
+| 数据库 | full.db(2.8G)+base.db(64M随身版) 双库并存 |
+| 801001身份 | asset_master 中改为"申万50"，冗余聚合字段已清除 |
+| 000985状态 | K线保留，过时衍生字段已清除 |
+
 ```
 MAIN_UP_CONFIRMED → TOP 3
 REBOUND           → TOP 2
@@ -190,13 +204,25 @@ RETREAT           → 空仓
 
 **行业行为评分层（W1/W2/W3/Delta）研究收口。** 从 EXP-002 到 EXP-007 已构成完整研究闭环：发现→验证→生命周期→归因→融合测试。成果冻结为 **Sector Leadership v1**。
 
-### 下一步方向 — 重新聚焦上层架构
+### 下一步方向 — 聚焦市场状态分析
 
-| 层级 | 当前状态 | 下一步问题 |
-|:----|:--------|:-----------|
-| 🟢 **行业行为层** | **✅ 完成** | W1/W2/W3/Delta 已收口为 Sector Leadership v1 |
-| 🟡 **市场状态层** | ✅ v0 已定型 | EXP-004 v0.5 已定型（bear false MAIN_UP=3%），是否改进交由上层决定 |
-| 🔴 **主线识别层** | **未解决** | Top1命中率≈随机，主线是谁？主线走到哪一步？ |
+当前研究链路：
+
+```
+已完成 ──→ 当前焦点 ──→ 待解决
+ 因子筛选      市场状态      主线识别
+(12MAIN+5AUX)  (四概率/失速)  (方向筛选已验证)
+                                  ↑
+                         需要市场状态给出结论后，
+                         才能精准运用单因子挖掘主线
+```
+
+| 层级 | 当前状态 | 下一步 |
+|:----|:--------|:-------|
+| 🟢 **因子筛选 (Phase A/B/C)** | **✅ 完成** | 17因子（12MAIN+5AUX）已注册冻结。**注意：IC测试基于旧基准 000985，换 801003 后需重跑验证** |
+| 🟡 **行业行为层** | **✅ 完成** | W1/W2/W3/Delta 已收口为 Sector Leadership v1。方向筛选 3×随机有效，但捕获率仅 21.6% |
+| 🟡 **市场状态层** | **当前焦点** | 四概率输出（Bottom/Bull/Top/Bear）+ 失速梯度模型 v2.1 已写完。需切换基准到 801003 后调试稳定 |
+| 🔴 **主线识别层** | **未解决** | 方向筛选有效但 Top1 命中率≈随机。需要市场状态层给出结论后，再接入 17 因子挖掘主线 |
 | 🔴 **市场估值层** | **空白** | PE分位、ERP、股债利差、融资余额、换手率分位 — 均未研究 |
 | 🔴 **主线持续性** | **空白** | 为何有的主线持续一年（AI/机器人）、有的仅三个月（元宇宙）？ |
 
@@ -213,29 +239,30 @@ RETREAT           → 空仓
 
 ```
 backend/collectors/
-├── build_sector_mapping.py         # Phase 1: 行业映射
-├── compute_stock_fields.py         # Phase 2: 涨跌幅/涨跌停
-├── aggregate_market_emotion.py     # Phase 3: 市场情绪
-├── aggregate_sector_breadth.py     # Phase 4: 行业宽度
-├── compute_amount_ratio.py         # Phase 5: 额比
+├── daily_update.py                 # 统一增量更新（801003 K线/PE/派生+行业+宏观）
+├── build_sector_mapping.py         # 行业映射
+├── compute_stock_fields.py         # 涨跌幅/涨跌停
+├── aggregate_sector_breadth.py     # 行业宽度
+├── fetch_macro_data.py             # 宏观数据(国债+两融)
 ├── tickflow_collector.py           # 个股日线采集
 └── sw_daily.py                     # 行业日线采集
 
 backend/research/analysis/
 ├── sector_behavior_score.py        # EXP-002 行业行为评分
 ├── market_state_recognition.py     # EXP-004 市场状态识别
-├── exp003_state_aware_evaluator.py # EXP-003 评估器
-├── false_main_up_diagnostics.py    # EXP-004 诊断工具
-└── output/                         # JSON 结果
-    ├── continuous_rolling_results.json     # EXP-002 基线
-    ├── market_state_daily_v05.json         # EXP-004 v0.5
-    ├── market_state_false_main_up_diagnostics.json
-    ├── exp003_state_aware_behavior_score.json  # EXP-003 结果 (A/B/C/D)
-    ├── exp003_chaos_top1_diagnostics.json      # EXP-003 CHAOS 诊断
-    ├── exp006_signal_lifecycle.json            # EXP-006 TOP1/TOP3 生命周期
-    ├── exp006a_winner_window_profiles.json     # EXP-006A 赢家画像
-    ├── exp006b_delta_analysis.json             # EXP-006B Delta 分层
-    └── exp006c_delta_lifecycle.json            # EXP-006C Delta 生命周期曲线
+├── market_structure_v1.py          # 四概率输出引擎
+├── market_structure_v2.py          # 失速梯度模型
+├── exp003_state_aware_evaluator.py # EXP-003 Variant D 评估器
+├── sector_leadership.py            # 历史主线复盘
+├── phase_A_class01_trend.py        # Phase A 因子测试
+├── phase_A_class02_volatility.py   # Phase A 因子测试
+├── phase_A_class03_breadth.py      # Phase A 因子测试
+├── phase_A_class04_pricevol_leadership.py  # Phase A 因子测试
+├── phase_A_class05_style.py        # Phase A 因子测试
+├── phase_B_orthogonality.py        # Phase B 正交性分析
+└── phase_C_combination.py          # Phase C 组合设计
+└── docs/archive/
+    └── false_main_up_diagnostics.py # EXP-004 诊断工具（归档）
 ```
 
 ### 关键文档
@@ -247,11 +274,10 @@ STATUS.md                           # ← 本文档
 
 docs/research/
 ├── INDEX.md                        # 实验索引
-├── MEMORY.md                       # 完成记录
+├── MEMORY.md                       # 研究记忆导航
 ├── LESSONS.md                      # 已验证结论
 ├── factor_scope_v1.md              # 因子分工决策
-├── data_readiness_v1.md            # 数据就绪审计
-├── data_runtime_spec_v1.md         # 运行规范
+├── behavior_scoring_v1.md          # EXP-001/002 行业行为评分
 ├── phase_sector_leadership_v1.md   # 13个市场阶段研究
 ├── etf_flow_as_signal_v1.md        # ETF方向研究
 └── experiments/
@@ -270,6 +296,7 @@ docs/agent/
 
 ### 数据库
 
-- 位置：`data/quant_engine.db`（SQLite）
-- 核心表：`asset_master`、`market_daily_data`（57 列宽表）
+- **full.db**: `data/quant_engine.db`（~2.8GB，SQLite，含个股行，台式研究用）
+- **base.db**: `data/quant_engine_base.db`（~64MB，仅行业+指数+宏观，出门随身版）
+- 核心表：`asset_master`、`market_daily_data`（59 列宽表）
 - Schema 文档：`docs/database_schema.md`

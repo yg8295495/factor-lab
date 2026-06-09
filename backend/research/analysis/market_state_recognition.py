@@ -1,6 +1,9 @@
 """
 EXP-004: Market State Recognition v0
 
+⚠️ 本文件硬编码 index.000985.SH（旧基准）。
+如需在 801003 上使用，改 BM 后重跑确认分布一致。完成后删除本行。
+
 Rule-based classifier: 5 dimensions (trend/breadth/emotion/volume/risk)
 → 5 states: MAIN_UP (CONFIRMED) / REBOUND / CROWDING / RETREAT / CHAOS (v0.4+)
 
